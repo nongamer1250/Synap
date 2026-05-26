@@ -1,9 +1,9 @@
 // ============================================================
-// TurboLearn AI — Shared TypeScript Types
+// Synap — Shared TypeScript Types
 // ============================================================
 
 export type UploadStatus = 'pending' | 'processing' | 'done' | 'error';
-export type FileType = 'audio' | 'pdf';
+export type FileType = 'audio' | 'pdf' | 'youtube';
 export type MessageRole = 'user' | 'assistant';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 

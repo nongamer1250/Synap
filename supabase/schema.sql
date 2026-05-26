@@ -1,0 +1,242 @@
+-- ============================================================
+-- Synap — Supabase Database Schema
+-- Run this in the Supabase SQL Editor
+-- ============================================================
+
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ── Profiles ─────────────────────────────────────────────────
+-- Extends Supabase auth.users with additional profile data
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Auto-create profile on user signup
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, avatar_url)
+  VALUES (
+    NEW.id,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'avatar_url'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- ── Uploads ──────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS uploads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  file_type TEXT NOT NULL CHECK (file_type IN ('audio', 'pdf')),
+  file_url TEXT NOT NULL,
+  file_size INTEGER,
+  duration_seconds INTEGER,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending','processing','done','error')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── Transcripts ───────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS transcripts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  upload_id UUID NOT NULL REFERENCES uploads(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  language TEXT DEFAULT 'en',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── Notes ─────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  upload_id UUID REFERENCES uploads(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  summary TEXT,
+  key_concepts JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Auto-update updated_at
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER notes_updated_at
+  BEFORE UPDATE ON notes
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ── Flashcards ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS flashcards (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  note_id UUID REFERENCES notes(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  difficulty TEXT DEFAULT 'medium' CHECK (difficulty IN ('easy','medium','hard')),
+  -- Spaced Repetition System (SRS) fields — ready for SM-2 algorithm
+  due_date TIMESTAMPTZ,
+  ease_factor FLOAT DEFAULT 2.5,
+  interval_days INTEGER DEFAULT 1,
+  review_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── Quizzes ───────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS quizzes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  note_id UUID REFERENCES notes(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  questions JSONB NOT NULL DEFAULT '[]'::jsonb,
+  difficulty TEXT DEFAULT 'medium' CHECK (difficulty IN ('easy','medium','hard')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── Quiz Attempts ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS quiz_attempts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  quiz_id UUID REFERENCES quizzes(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  score INTEGER,
+  answers JSONB DEFAULT '{}'::jsonb,
+  completed_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── Chat Sessions ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS chat_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  note_id UUID REFERENCES notes(id) ON DELETE SET NULL,
+  title TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── Chat Messages ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user','assistant')),
+  content TEXT NOT NULL,
+  sources JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── Document Chunks (for RAG) ─────────────────────────────────
+-- Stores chunked text + vector embeddings for semantic search
+CREATE TABLE IF NOT EXISTS document_chunks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  note_id UUID REFERENCES notes(id) ON DELETE CASCADE,
+  upload_id UUID REFERENCES uploads(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  chunk_index INTEGER NOT NULL,
+  -- 384 dimensions for sentence-transformers/all-MiniLM-L6-v2
+  embedding vector(384),
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Vector similarity search index (IVFFlat for approximate nearest neighbor)
+CREATE INDEX IF NOT EXISTS document_chunks_embedding_idx
+  ON document_chunks USING ivfflat (embedding vector_cosine_ops)
+  WITH (lists = 50);
+
+-- ── Row Level Security ────────────────────────────────────────
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE uploads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transcripts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quizzes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quiz_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE document_chunks ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Users manage own profile" ON profiles FOR ALL USING (auth.uid() = id);
+CREATE POLICY "Users manage own uploads" ON uploads FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own transcripts" ON transcripts FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own notes" ON notes FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own flashcards" ON flashcards FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own quizzes" ON quizzes FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own quiz attempts" ON quiz_attempts FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own chat sessions" ON chat_sessions FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own chat messages" ON chat_messages
+  FOR ALL USING (
+    auth.uid() = (SELECT user_id FROM chat_sessions WHERE id = session_id)
+  );
+CREATE POLICY "Users manage own chunks" ON document_chunks FOR ALL USING (auth.uid() = user_id);
+
+-- ── Vector Search Function ────────────────────────────────────
+-- Used by the RAG pipeline to find similar document chunks
+CREATE OR REPLACE FUNCTION match_document_chunks(
+  query_embedding vector(384),
+  match_count INT DEFAULT 5,
+  filter_user_id UUID DEFAULT NULL,
+  filter_note_id UUID DEFAULT NULL
+)
+RETURNS TABLE (
+  id UUID,
+  note_id UUID,
+  upload_id UUID,
+  user_id UUID,
+  content TEXT,
+  chunk_index INT,
+  metadata JSONB,
+  similarity FLOAT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    dc.id,
+    dc.note_id,
+    dc.upload_id,
+    dc.user_id,
+    dc.content,
+    dc.chunk_index,
+    dc.metadata,
+    1 - (dc.embedding <=> query_embedding) AS similarity
+  FROM document_chunks dc
+  WHERE
+    (filter_user_id IS NULL OR dc.user_id = filter_user_id)
+    AND (filter_note_id IS NULL OR dc.note_id = filter_note_id)
+    AND dc.embedding IS NOT NULL
+  ORDER BY dc.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$;
+
+-- ── Supabase Storage Bucket ───────────────────────────────────
+-- Run this manually in the Supabase Dashboard → Storage
+-- Or via the API:
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('uploads', 'uploads', false);
+
+-- Storage policies (run after creating the bucket):
+-- CREATE POLICY "Users upload own files" ON storage.objects FOR INSERT
+--   WITH CHECK (auth.uid()::text = (storage.foldername(name))[1]);
+-- CREATE POLICY "Users view own files" ON storage.objects FOR SELECT
+--   USING (auth.uid()::text = (storage.foldername(name))[1]);
+-- CREATE POLICY "Users delete own files" ON storage.objects FOR DELETE
+--   USING (auth.uid()::text = (storage.foldername(name))[1]);
