@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'segment content is required' }, { status: 400 });
       }
 
-      // Enforce daily limit of 2 notes per day for the free tier (only if no custom API key is provided)
+      // Enforce daily limit of 5 notes per day for the free tier (only if no custom API key is provided)
       if (!customApiKey || !customApiKey.startsWith('gsk_')) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -81,9 +81,9 @@ export async function POST(request: Request) {
 
         if (countError) {
           console.error('Failed to query daily note count:', countError);
-        } else if (count !== null && count >= 2) {
+        } else if (count !== null && count >= 5) {
           return NextResponse.json(
-            { error: 'Daily free limit reached (2 notes/day). Please add your own free Groq API key in the API Settings on the Upload page to unlock unlimited notes!' },
+            { error: 'Daily free limit reached (5 notes/day). Please add your own free Groq API key in the API Settings on the Upload page to unlock unlimited notes!' },
             { status: 403 }
           );
         }
@@ -174,7 +174,7 @@ export async function POST(request: Request) {
     const segments = splitTranscript(transcript);
 
     if (segments.length === 1) {
-      // Enforce daily limit of 2 notes per day for the free tier (only if no custom API key is provided)
+      // Enforce daily limit of 5 notes per day for the free tier (only if no custom API key is provided)
       if (!customApiKey || !customApiKey.startsWith('gsk_')) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -187,9 +187,9 @@ export async function POST(request: Request) {
 
         if (countError) {
           console.error('Failed to query daily note count:', countError);
-        } else if (count !== null && count >= 2) {
+        } else if (count !== null && count >= 5) {
           return NextResponse.json(
-            { error: 'Daily free limit reached (2 notes/day). Please add your own free Groq API key in the API Settings on the Upload page to unlock unlimited notes!' },
+            { error: 'Daily free limit reached (5 notes/day). Please add your own free Groq API key in the API Settings on the Upload page to unlock unlimited notes!' },
             { status: 403 }
           );
         }
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });
       }
     } else {
-      // Enforce daily limit of 2 notes per day for the free tier (only if no custom API key is provided)
+      // Enforce daily limit of 5 notes per day for the free tier (only if no custom API key is provided)
       if (!customApiKey || !customApiKey.startsWith('gsk_')) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -225,9 +225,9 @@ export async function POST(request: Request) {
 
         if (countError) {
           console.error('Failed to query daily note count:', countError);
-        } else if (count !== null && count >= 2) {
+        } else if (count !== null && count >= 5) {
           return NextResponse.json(
-            { error: 'Daily free limit reached (2 notes/day). Please add your own free Groq API key in the API Settings on the Upload page to unlock unlimited notes!' },
+            { error: 'Daily free limit reached (5 notes/day). Please add your own free Groq API key in the API Settings on the Upload page to unlock unlimited notes!' },
             { status: 403 }
           );
         }

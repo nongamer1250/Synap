@@ -409,7 +409,7 @@ export default function UploadPage() {
               <span>
                 {customApiKey
                   ? 'Custom API Key Active (Unlimited Generation)'
-                  : 'Daily Free Tier (Limit: 2 notes/day)'}
+                  : 'Daily Free Tier (Limit: 5 notes/day)'}
               </span>
             </div>
             <span className="text-xs text-primary hover:underline transition-colors font-medium">
@@ -420,7 +420,7 @@ export default function UploadPage() {
           {showApiSettings && (
             <div className="mt-4 pt-4 border-t border-border space-y-3 animate-scale-in">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                By default, the shared key allows up to 2 premium note generations per day. To unlock unlimited generation, paste your own free Groq API key below. Keys are stored locally in your browser and are never saved on our servers.
+                By default, the shared key allows up to 5 premium note generations per day. To unlock unlimited generation, paste your own free Groq API key below. Keys are stored locally in your browser and are never saved on our servers.
               </p>
               <div className="flex gap-2">
                 <input
