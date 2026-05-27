@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0c1b"/>
+      <stop offset="50%" stop-color="#150f2e"/>
+      <stop offset="100%" stop-color="#0b0816"/>
+    </linearGradient>
+    
+    <!-- Logo Icon Gradient -->
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/> <!-- Light Purple -->
+      <stop offset="50%" stop-color="#e879f9"/> <!-- Light Fuchsia -->
+      <stop offset="100%" stop-color="#818cf8"/> <!-- Light Indigo -->
+    </linearGradient>
+    
+    <!-- Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Circle/Rounded Box -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  
+  <!-- Synap Brand Logo Design (S-shaped Neural Lightning Bolt) -->
+  <g filter="url(#glow)">
+    <!-- Main Synap S-Lightning Path -->
+    <path d="M 330 130 
+             L 210 250 
+             L 280 250 
+             L 182 382 
+             L 302 262 
+             L 232 262 
+             Z" 
+          fill="url(#logoGrad)" />
+          
+    <!-- Synaptic Nodes (Glowing connecting circles at key vertices) -->
+    <!-- Top node -->
+    <circle cx="330" cy="130" r="14" fill="#c084fc" />
+    <line x1="330" y1="130" x2="370" y2="90" stroke="#c084fc" stroke-width="6" stroke-linecap="round" />
+    <circle cx="370" cy="90" r="10" fill="#c084fc" />
+    
+    <line x1="330" y1="130" x2="385" y2="150" stroke="#c084fc" stroke-width="6" stroke-linecap="round" />
+    <circle cx="385" cy="150" r="8" fill="#e879f9" />
+
+    <!-- Bottom node -->
+    <circle cx="182" cy="382" r="14" fill="#818cf8" />
+    <line x1="182" y1="382" x2="142" y2="422" stroke="#818cf8" stroke-width="6" stroke-linecap="round" />
+    <circle cx="142" cy="422" r="10" fill="#818cf8" />
+    
+    <line x1="182" y1="382" x2="127" y2="362" stroke="#818cf8" stroke-width="6" stroke-linecap="round" />
+    <circle cx="127" cy="362" r="8" fill="#e879f9" />
+    
+    <!-- Central Synapse bridges (Micro connection details) -->
+    <line x1="280" y1="250" x2="330" y2="230" stroke="#e879f9" stroke-width="4" stroke-dasharray="3,3" />
+    <circle cx="330" cy="230" r="6" fill="#e879f9" />
+
+    <line x1="210" y1="250" x2="160" y2="270" stroke="#e879f9" stroke-width="4" stroke-dasharray="3,3" />
+    <circle cx="160" cy="270" r="6" fill="#e879f9" />
+  </g>
+</svg>

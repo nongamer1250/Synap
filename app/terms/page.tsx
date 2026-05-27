@@ -19,7 +19,7 @@ export default function TermsPage() {
               style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}>
               ⚡
             </div>
-            <span className="font-bold text-lg gradient-text">Synap</span>
+            <span className="font-bold text-lg gradient-text">Synap™</span>
           </Link>
           <h1 className="text-3xl font-bold">Terms of Service</h1>
           <p className="text-muted-foreground mt-1">Last Updated: May 26, 2026</p>

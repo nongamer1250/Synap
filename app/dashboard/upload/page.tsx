@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { Upload, FileAudio, FileText, X, CheckCircle, Loader2 } from 'lucide-react';
 import AdBanner from '@/components/layout/AdBanner';
@@ -445,17 +446,25 @@ export default function UploadPage() {
                   </button>
                 )}
               </div>
-              <p className="text-[10px] text-muted-foreground">
-                Get a free API Key in 30 seconds at{' '}
-                <a
-                  href="https://console.groq.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-primary hover:underline transition-colors"
+              <div className="text-[10px] text-muted-foreground flex flex-wrap items-center justify-between gap-2 pt-1">
+                <span>
+                  Get a free API Key in 30 seconds at{' '}
+                  <a
+                    href="https://console.groq.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary hover:underline transition-colors font-medium"
+                  >
+                    console.groq.com
+                  </a>
+                </span>
+                <Link
+                  href="/groq-guide"
+                  className="text-accent hover:text-accent-foreground hover:underline transition-colors font-semibold flex items-center gap-1"
                 >
-                  console.groq.com
-                </a>
-              </p>
+                  📖 Step-by-Step Guide for Beginners
+                </Link>
+              </div>
             </div>
           )}
         </div>

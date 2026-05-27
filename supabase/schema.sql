@@ -240,3 +240,49 @@ $$;
 --   USING (auth.uid()::text = (storage.foldername(name))[1]);
 -- CREATE POLICY "Users delete own files" ON storage.objects FOR DELETE
 --   USING (auth.uid()::text = (storage.foldername(name))[1]);
+
+-- ── Syllabus & Exam Prep ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.syllabi (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  exam_date TIMESTAMPTZ,
+  file_url TEXT,
+  file_type TEXT CHECK (file_type IN ('pdf', 'image')) NOT NULL,
+  raw_text TEXT,
+  topic_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.syllabus_topics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  syllabus_id UUID NOT NULL REFERENCES public.syllabi(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  sort_order INTEGER DEFAULT 0,
+  status TEXT CHECK (status IN ('not_started', 'in_progress', 'completed')) DEFAULT 'not_started',
+  note_id UUID REFERENCES public.notes(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.sample_papers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  syllabus_id UUID NOT NULL REFERENCES public.syllabi(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  format_description TEXT NOT NULL,
+  content JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Row Level Security
+ALTER TABLE public.syllabi ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.syllabus_topics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sample_papers ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Users manage own syllabi" ON public.syllabi FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own syllabus topics" ON public.syllabus_topics FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users manage own sample papers" ON public.sample_papers FOR ALL USING (auth.uid() = user_id);
+

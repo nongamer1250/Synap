@@ -1,0 +1,24 @@
+{
+  "name": "Synap",
+  "short_name": "Synap",
+  "description": "Upload lecture audio or PDFs and get instant AI-generated study notes, flashcards, quizzes, and an AI tutor.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0c1b",
+  "theme_color": "#150f2e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

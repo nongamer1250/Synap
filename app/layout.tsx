@@ -2,9 +2,13 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import Script from 'next/script';
+import PwaInstallPrompt from '@/components/layout/PwaInstallPrompt';
+import SmoothScrollProvider from '@/components/providers/SmoothScrollProvider';
+import ScrollReveal from '@/components/layout/ScrollReveal';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+
 
 export const metadata: Metadata = {
   title: {
@@ -14,6 +18,7 @@ export const metadata: Metadata = {
   description:
     'Upload lecture audio or PDFs and get instant AI-generated study notes, flashcards, quizzes, and an AI tutor — for free.',
   keywords: ['AI study assistant', 'lecture notes', 'flashcards', 'quiz generator', 'transcription'],
+  manifest: '/manifest.json',
   openGraph: {
     title: 'Synap',
     description: 'Your AI-powered study companion',
@@ -32,7 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
-        {children}
+        <SmoothScrollProvider>
+          {children}
+        </SmoothScrollProvider>
         <Toaster
           position="top-right"
           toastOptions={{
@@ -45,7 +52,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             error: { iconTheme: { primary: '#f38ba8', secondary: '#1e1e2e' } },
           }}
         />
+        <PwaInstallPrompt />
+        <ScrollReveal />
       </body>
     </html>
   );
 }
+
+

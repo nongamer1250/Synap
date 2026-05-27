@@ -382,6 +382,7 @@ html {
 /* Global smooth interactive hover card effect */
 .glass-hover {
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  will-change: transform, border-color, background-color, box-shadow;
 }
 .glass-hover:hover {
   transform: translateY(-4px) scale(1.006) !important;
@@ -389,4 +390,107 @@ html {
   background: rgba(255, 255, 255, 0.05) !important;
   box-shadow: 0 16px 36px -12px hsl(255 85% 68% / 0.2) !important;
 }
+
+/* ── Mobile Performance Optimizations ────────────────────── */
+@media (max-width: 768px) {
+  /* Disable heavy infinite animations containing blurs and transforms on mobile */
+  .animate-orb-float-1,
+  .animate-orb-float-2,
+  .animate-float-1,
+  .animate-float-2,
+  .animate-float-3 {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* Disable hover translations and scaling on touchscreens to prevent sticky/jittery taps */
+  .glass-hover {
+    transition: border-color 0.2s ease, background-color 0.2s ease !important;
+    will-change: auto !important;
+  }
+  .glass-hover:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  /* Optimize general components to render directly via GPU compositor layers */
+  aside,
+  .sidebar-link,
+  .glass {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+}
+
+/* ── Lenis Smooth Scroll Overrides ───────────────────────── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* ── Scroll Reveal Animations (Multi-trigger) ────────────── */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, transform;
+}
+.reveal-left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, transform;
+}
+.reveal-right.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, transform;
+}
+.reveal-scale.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
 

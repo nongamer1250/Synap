@@ -222,3 +222,46 @@ async function streamWithOllama(
     },
   });
 }
+
+/** Vision completion — extracts text from an image base64 */
+export async function completeVision(
+  base64Image: string,
+  contentType: string,
+  prompt: string,
+  apiKey?: string
+): Promise<string> {
+  const key = apiKey || process.env.GROQ_API_KEY;
+  if (!key) {
+    throw new Error('GROQ_API_KEY is required for vision tasks.');
+  }
+
+  const groq = new Groq({ apiKey: key });
+  const model = 'meta-llama/llama-4-scout-17b-16e-instruct';
+
+  try {
+    const completion = await groq.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${contentType};base64,${base64Image}`,
+              },
+            },
+          ] as any,
+        },
+      ],
+      temperature: 0.2,
+    });
+
+    return completion.choices[0]?.message?.content ?? '';
+  } catch (err: any) {
+    console.error('Groq vision error:', err?.message || err);
+    throw err;
+  }
+}
+

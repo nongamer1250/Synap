@@ -1,19 +1,22 @@
 'use client';
 
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Upload,
+  GraduationCap,
   FileText,
   CreditCard,
   HelpCircle,
   MessageSquare,
-  Zap,
   X,
 } from 'lucide-react';
 import type { Profile } from '@/types';
 import AdBanner from './AdBanner';
+import Logo from './Logo';
+import SupportModal from './SupportModal';
 
 interface SidebarProps {
   user: Profile;
@@ -23,27 +26,25 @@ interface SidebarProps {
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/upload', label: 'Upload', icon: Upload },
+  { href: '/dashboard/syllabus', label: 'Exam Prep', icon: GraduationCap },
   { href: '/dashboard/notes', label: 'My Notes', icon: FileText },
   { href: '/dashboard/flashcards', label: 'Flashcards', icon: CreditCard },
   { href: '/dashboard/quiz', label: 'Quizzes', icon: HelpCircle },
   { href: '/dashboard/chat', label: 'AI Chat', icon: MessageSquare },
 ];
 
+
 export default function Sidebar({ user, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   return (
     <aside className="w-64 h-full flex flex-col border-r border-border bg-card shrink-0">
       {/* Logo */}
       <div className="flex items-center justify-between px-4 py-5 border-b border-border">
-        <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all duration-500 group-hover:rotate-[360deg] group-hover:scale-110 shadow-md group-hover:shadow-primary/30"
-            style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
-          >
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-lg tracking-tight gradient-text transition-all duration-300 group-hover:opacity-90">Synap</span>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <Logo size={28} className="transition-all duration-500 group-hover:rotate-[360deg] group-hover:scale-110" />
+          <span className="font-bold text-lg tracking-tight gradient-text transition-all duration-300 group-hover:opacity-90">Synap™</span>
         </Link>
         {onClose && (
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground lg:hidden transition-colors active:scale-95">
@@ -82,6 +83,17 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
         })}
       </nav>
 
+      {/* Support the Developer */}
+      <div className="px-3 mb-2 shrink-0">
+        <button
+          onClick={() => setIsSupportOpen(true)}
+          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 active-press cursor-pointer transition-all duration-300"
+        >
+          <span className="text-base animate-pulse-soft">☕</span>
+          <span>Support the Developer</span>
+        </button>
+      </div>
+
       {/* Premium Sponsor/Ad Placement */}
       <div className="px-4 py-3 mt-auto border-t border-border/40">
         <AdBanner type="sidebar" />
@@ -100,6 +112,9 @@ export default function Sidebar({ user, onClose }: SidebarProps) {
           </div>
         </div>
       </div>
+
+      {/* Support Modal */}
+      <SupportModal isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
     </aside>
   );
 }

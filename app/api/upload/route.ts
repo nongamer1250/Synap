@@ -33,8 +33,18 @@ export async function POST(request: Request) {
     }
 
     // Determine file type
-    const isAudio = ALLOWED_AUDIO_TYPES.includes(file.type);
-    const isPdf = ALLOWED_PDF_TYPES.includes(file.type);
+    let isAudio = ALLOWED_AUDIO_TYPES.includes(file.type);
+    let isPdf = ALLOWED_PDF_TYPES.includes(file.type);
+
+    // Fallback: Check file extension if browser MIME-type detection is missing or incorrect (common on mobile browsers)
+    if (!isAudio && !isPdf && file.name) {
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      if (extension === 'pdf') {
+        isPdf = true;
+      } else if (['mp3', 'wav', 'm4a', 'webm', 'ogg'].includes(extension || '')) {
+        isAudio = true;
+      }
+    }
 
     if (!isAudio && !isPdf) {
       return NextResponse.json(

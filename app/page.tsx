@@ -13,6 +13,7 @@ import {
   Layers,
   Heart,
 } from 'lucide-react';
+import Logo from '@/components/layout/Logo';
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -37,13 +38,8 @@ export default async function HomePage() {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg text-white"
-              style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
-            >
-              <Zap className="w-4 h-4" />
-            </div>
-            <span className="font-bold text-xl tracking-tight gradient-text">Synap</span>
+            <Logo size={32} />
+            <span className="font-bold text-xl tracking-tight gradient-text">Synap™</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
@@ -159,12 +155,12 @@ export default async function HomePage() {
         </div>
 
         {/* Dashboard Visual Mockup */}
-        <div className="pt-16 max-w-5xl mx-auto relative group">
+        <div className="pt-16 max-w-5xl mx-auto relative group reveal-scale">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl blur-3xl opacity-60 group-hover:opacity-80 transition-all duration-500 pointer-events-none" />
           <div className="relative glass border border-border/80 rounded-2xl overflow-hidden shadow-2xl p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
             
             {/* Mock Card 1: Notes preview */}
-            <div className="rounded-xl border border-border/60 bg-card/60 p-5 flex flex-col justify-between min-h-[220px] animate-float-1">
+            <div className="rounded-xl border border-border/60 bg-card/60 p-5 flex flex-col justify-between min-h-[220px] animate-float-1 reveal-left">
               <div>
                 <div className="flex items-center gap-2 text-primary font-semibold text-sm mb-3">
                   <BookOpen className="w-4 h-4" />
@@ -185,7 +181,7 @@ export default async function HomePage() {
             </div>
 
             {/* Mock Card 2: AI Chat Preview */}
-            <div className="rounded-xl border border-border/60 bg-card/60 p-5 flex flex-col justify-between min-h-[220px] animate-float-2">
+            <div className="rounded-xl border border-border/60 bg-card/60 p-5 flex flex-col justify-between min-h-[220px] animate-float-2 reveal-on-scroll">
               <div>
                 <div className="flex items-center gap-2 text-accent font-semibold text-sm mb-3">
                   <MessageSquare className="w-4 h-4" style={{ color: 'hsl(var(--accent))' }} />
@@ -206,7 +202,7 @@ export default async function HomePage() {
             </div>
 
             {/* Mock Card 3: Quiz/Flashcard Preview */}
-            <div className="rounded-xl border border-border/60 bg-card/60 p-5 flex flex-col justify-between min-h-[220px] animate-float-3">
+            <div className="rounded-xl border border-border/60 bg-card/60 p-5 flex flex-col justify-between min-h-[220px] animate-float-3 reveal-right">
               <div>
                 <div className="flex items-center gap-2 text-success font-semibold text-sm mb-3">
                   <Brain className="w-4 h-4" style={{ color: 'hsl(var(--success))' }} />
@@ -241,7 +237,7 @@ export default async function HomePage() {
       {/* Feature Grid Section */}
       <section id="features" className="py-24 border-y border-border/40 relative z-10 bg-muted/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
+          <div className="text-center space-y-4 max-w-2xl mx-auto reveal-on-scroll">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
               Fully Equipped for Active Recall
             </h2>
@@ -253,7 +249,7 @@ export default async function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300">
+            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300 reveal-left">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
                 style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
@@ -268,7 +264,7 @@ export default async function HomePage() {
             </div>
 
             {/* Feature 2 */}
-            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300">
+            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300 reveal-on-scroll">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
                 style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
@@ -283,7 +279,7 @@ export default async function HomePage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300">
+            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300 reveal-right">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
                 style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
@@ -298,7 +294,7 @@ export default async function HomePage() {
             </div>
 
             {/* Feature 4 */}
-            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300">
+            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300 reveal-left">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
                 style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
@@ -313,7 +309,7 @@ export default async function HomePage() {
             </div>
 
             {/* Feature 5 */}
-            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300">
+            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300 reveal-on-scroll">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
                 style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
@@ -328,7 +324,7 @@ export default async function HomePage() {
             </div>
 
             {/* Feature 6 */}
-            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300">
+            <div className="glass border border-border/60 rounded-2xl p-6 space-y-4 hover:border-primary/40 transition-colors duration-300 reveal-right">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
                 style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
@@ -347,7 +343,7 @@ export default async function HomePage() {
 
       {/* How It Works Section */}
       <section id="how-it-works" className="py-24 relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <div className="text-center space-y-4 max-w-2xl mx-auto reveal-scale">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             How Synap Works
           </h2>
@@ -357,7 +353,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="relative glass border border-border p-8 rounded-2xl text-center space-y-4">
+          <div className="relative glass border border-border p-8 rounded-2xl text-center space-y-4 reveal-left">
             <div className="absolute top-4 right-6 text-3xl font-extrabold opacity-15 text-primary">01</div>
             <h3 className="text-base font-bold">1. Upload Lecture</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -366,7 +362,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="relative glass border border-border p-8 rounded-2xl text-center space-y-4">
+          <div className="relative glass border border-border p-8 rounded-2xl text-center space-y-4 reveal-on-scroll">
             <div className="absolute top-4 right-6 text-3xl font-extrabold opacity-15 text-primary">02</div>
             <h3 className="text-base font-bold">2. Segment Process</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -375,7 +371,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="relative glass border border-border p-8 rounded-2xl text-center space-y-4">
+          <div className="relative glass border border-border p-8 rounded-2xl text-center space-y-4 reveal-right">
             <div className="absolute top-4 right-6 text-3xl font-extrabold opacity-15 text-primary">03</div>
             <h3 className="text-base font-bold">3. Study & Master</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -387,7 +383,7 @@ export default async function HomePage() {
       </section>
 
       {/* Credit & Vision Section */}
-      <section id="about" className="py-24 border-t border-border/40 relative z-10 bg-muted/5">
+      <section id="about" className="py-24 border-t border-border/40 relative z-10 bg-muted/5 reveal-scale">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-8">
           <div
             className="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center text-white"
@@ -409,10 +405,16 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="pt-6">
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <div className="inline-block glass border border-border/80 px-6 py-3 rounded-full text-xs font-semibold tracking-wide text-foreground">
               Built with <span className="text-red-500 mx-0.5">❤️</span> by a Student, for Students.
             </div>
+            <Link
+              href="/support"
+              className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold tracking-wide transition-all active-press cursor-pointer"
+            >
+              ☕ Fund the Developer
+            </Link>
           </div>
         </div>
       </section>
@@ -421,23 +423,21 @@ export default async function HomePage() {
       <footer className="border-t border-border/40 bg-card py-12 relative z-10 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs text-white"
-              style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
-            >
-              ⚡
-            </div>
-            <span className="font-bold text-sm tracking-tight text-foreground">Synap</span>
+            <Logo size={24} />
+            <span className="font-bold text-sm tracking-tight text-foreground">Synap™</span>
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 text-xs text-muted-foreground">
+            <Link href="/support" className="hover:text-rose-400 font-semibold transition-colors">
+              ☕ Support Us
+            </Link>
             <Link href="/privacy" className="hover:text-foreground hover:underline transition-colors">
               Privacy Policy
             </Link>
             <Link href="/terms" className="hover:text-foreground hover:underline transition-colors">
               Terms of Service
             </Link>
-            <span>&copy; {new Date().getFullYear()} Synap. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} Synap™ . All rights reserved.</span>
           </div>
         </div>
       </footer>

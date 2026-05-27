@@ -159,3 +159,51 @@ export interface ChatRequest {
   message: string;
   note_id?: string;
 }
+
+// ── Syllabus & Exam Prep ──────────────────────────────────────
+export type SyllabusFileType = 'pdf' | 'image';
+export type TopicStatus = 'not_started' | 'in_progress' | 'completed';
+
+export interface Syllabus {
+  id: string;
+  user_id: string;
+  title: string;
+  exam_date: string | null;
+  file_url: string | null;
+  file_type: SyllabusFileType;
+  raw_text: string | null;
+  topic_count: number;
+  created_at: string;
+  syllabus_topics?: { id: string; status: TopicStatus }[];
+}
+
+export interface SyllabusTopic {
+  id: string;
+  syllabus_id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  sort_order: number;
+  status: TopicStatus;
+  note_id: string | null;
+  created_at: string;
+}
+
+export interface SamplePaperQuestion {
+  id: string;
+  question: string;
+  answer_key: string;
+  marks?: number;
+  section?: string;
+}
+
+export interface SamplePaper {
+  id: string;
+  syllabus_id: string;
+  user_id: string;
+  title: string;
+  format_description: string;
+  content: SamplePaperQuestion[];
+  created_at: string;
+}
+
