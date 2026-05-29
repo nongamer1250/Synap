@@ -126,15 +126,22 @@ export default async function HomePage() {
             <Mascot />
 
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-none">
-              Turn Any Lecture Into <br />
-              <span className="gradient-text animate-pulse-soft">Exam-Ready Notes</span> in Minutes.
+              Study 3x Faster. <br />
+              <span className="gradient-text animate-pulse-soft">Ace Your Exams.</span>
             </h1>
           </div>
 
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed pt-2">
-            Synap is the ultimate <strong>AI study notes</strong> and <strong>AI flashcard generator</strong> platform. 
+          <div className="flex justify-center pt-2">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-success/10 border border-success/20 text-success text-xs font-bold shadow-sm">
+              <CheckCircle className="w-4 h-4 text-success" />
+              <span>Over 50,000+ flashcards generated and trusted by 1,200+ students globally.</span>
+            </div>
+          </div>
+
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed pt-1">
+            Synap is the ultimate <strong>Exam Preparation & Semester Workspace</strong> platform. 
             Instantly turn lecture audio, textbook PDFs, or YouTube videos into rich study guides, interactive quizzes, 
-            and active-recall decks for free.
+            active-recall decks, and AI predicted questions for free.
           </p>
         </div>
 

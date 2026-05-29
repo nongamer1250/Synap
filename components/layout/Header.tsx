@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { LogOut, Bell, Menu } from 'lucide-react';
+import { LogOut, Bell, Menu, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types';
+import SettingsModal from './SettingsModal';
 
 interface HeaderProps {
   user: Profile;
@@ -16,6 +17,7 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
   const router = useRouter();
   const supabase = createClient();
   const [isNative, setIsNative] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     setIsNative(typeof window !== 'undefined' && !!(window as any).Capacitor);
@@ -99,6 +101,13 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
           <Bell className="w-4.5 h-4.5" style={{ width: '1.1rem', height: '1.1rem' }} />
         </button>
         <button
+          onClick={() => setIsSettingsOpen(true)}
+          title="App Settings"
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer active-press"
+        >
+          <Settings className="w-4.5 h-4.5" style={{ width: '1.1rem', height: '1.1rem' }} />
+        </button>
+        <button
           onClick={handleSignOut}
           className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
@@ -106,6 +115,12 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
           <span className="hidden sm:inline">Sign out</span>
         </button>
       </div>
+
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        user={user} 
+      />
     </header>
   );
 }

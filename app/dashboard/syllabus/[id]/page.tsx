@@ -24,6 +24,7 @@ import {
   Printer
 } from 'lucide-react';
 import type { Syllabus, SyllabusTopic, SamplePaper } from '@/types';
+import ExamPrepWorkspace from '@/components/syllabus/ExamPrepWorkspace';
 
 type GeneratingType = Record<string, 'notes' | 'flashcards' | 'quiz' | null>;
 
@@ -41,7 +42,7 @@ export default function SyllabusDetailPage() {
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [newExamDate, setNewExamDate] = useState('');
   const [updatingDate, setUpdatingDate] = useState(false);
-  const [activeTab, setActiveTab] = useState<'topics' | 'calendar'>('topics');
+  const [activeTab, setActiveTab] = useState<'topics' | 'calendar' | 'examprep'>('topics');
 
   // Generation status
   const [generating, setGenerating] = useState<GeneratingType>({});
@@ -745,10 +746,10 @@ export default function SyllabusDetailPage() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex border-b border-border/40 gap-2">
+      <div className="flex border-b border-border/40 gap-2 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab('topics')}
-          className={`px-5 py-3 text-xs sm:text-sm font-bold border-b-2 cursor-pointer transition-all ${
+          className={`px-5 py-3 text-xs sm:text-sm font-bold border-b-2 cursor-pointer transition-all whitespace-nowrap ${
             activeTab === 'topics'
               ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -758,7 +759,7 @@ export default function SyllabusDetailPage() {
         </button>
         <button
           onClick={() => setActiveTab('calendar')}
-          className={`px-5 py-3 text-xs sm:text-sm font-bold border-b-2 cursor-pointer transition-all flex items-center gap-1.5 ${
+          className={`px-5 py-3 text-xs sm:text-sm font-bold border-b-2 cursor-pointer transition-all flex items-center gap-1.5 whitespace-nowrap ${
             activeTab === 'calendar'
               ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -767,9 +768,27 @@ export default function SyllabusDetailPage() {
           <Calendar className="w-4 h-4 text-yellow-500" />
           <span>📅 AI Study Planner</span>
         </button>
+        <button
+          onClick={() => setActiveTab('examprep')}
+          className={`px-5 py-3 text-xs sm:text-sm font-bold border-b-2 cursor-pointer transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            activeTab === 'examprep'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-primary animate-pulse-soft" />
+          <span>⚡ AI Exam Prep Workspace</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Exam Prep Workspace - Left/Main side */}
+        {activeTab === 'examprep' && (
+          <div className="lg:col-span-2 space-y-6">
+            <ExamPrepWorkspace syllabus={syllabus} topics={topics} />
+          </div>
+        )}
+
         {/* Topics List - Left/Main side */}
         {activeTab === 'topics' && (
           <div className="lg:col-span-2 space-y-4">

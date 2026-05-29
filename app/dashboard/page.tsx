@@ -17,7 +17,8 @@ import {
   Trophy
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import ResetDataButton from '@/components/ResetDataButton';
+import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist';
+import MasteryDashboard from '@/components/dashboard/MasteryDashboard';
 
 // Helper to format countdown
 const getExamCountdown = (examDateStr: string | null) => {
@@ -139,8 +140,25 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
-        <ResetDataButton />
       </div>
+
+      {/* ── VISUAL ONBOARDING CHECKLIST ── */}
+      <OnboardingChecklist 
+        notesCount={notesCount}
+        flashcardsCount={flashcardsCount}
+        quizzesCount={quizAttemptsCount}
+        syllabusCount={syllabiRes.data ? syllabiRes.data.length : 0}
+      />
+
+      {/* ── PROGRESS & MASTERY DASHBOARD ── */}
+      <MasteryDashboard 
+        notesCount={notesCount}
+        flashcardsCount={flashcardsCount}
+        quizzesCount={quizAttemptsCount}
+        syllabusCount={syllabiRes.data ? syllabiRes.data.length : 0}
+        topicsCompleted={completedTopicsCount}
+        totalTopics={totalTopicsCount}
+      />
 
       {/* ── RETENTION LOOP: STUDY PLANNER REMINDER & STATS OVERVIEW ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
