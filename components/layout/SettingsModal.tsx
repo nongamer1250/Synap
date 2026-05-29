@@ -17,40 +17,13 @@ interface SettingsModalProps {
   };
 }
 
-const SQL_MIGRATION = `-- ============================================================
--- Synap — Supabase Database Performance Indexes
--- Copy and paste these into your Supabase SQL Editor
--- ============================================================
 
--- Uploads & Transcripts foreign key indexing
-CREATE INDEX IF NOT EXISTS uploads_user_id_idx ON public.uploads(user_id);
-CREATE INDEX IF NOT EXISTS transcripts_upload_id_idx ON public.transcripts(upload_id);
-CREATE INDEX IF NOT EXISTS transcripts_user_id_idx ON public.transcripts(user_id);
-
--- Study Notes & Spaced Repetition Flashcards indexes
-CREATE INDEX IF NOT EXISTS notes_upload_id_idx ON public.notes(upload_id);
-CREATE INDEX IF NOT EXISTS notes_user_id_idx ON public.notes(user_id);
-CREATE INDEX IF NOT EXISTS flashcards_note_id_idx ON public.flashcards(note_id);
-CREATE INDEX IF NOT EXISTS flashcards_user_id_idx ON public.flashcards(user_id);
-CREATE INDEX IF NOT EXISTS flashcards_due_date_idx ON public.flashcards(due_date);
-
--- Active Recall Quizzes & Exam Attempt indexes
-CREATE INDEX IF NOT EXISTS quizzes_note_id_idx ON public.quizzes(note_id);
-CREATE INDEX IF NOT EXISTS quizzes_user_id_idx ON public.quizzes(user_id);
-CREATE INDEX IF NOT EXISTS quiz_attempts_quiz_id_idx ON public.quiz_attempts(quiz_id);
-CREATE INDEX IF NOT EXISTS quiz_attempts_user_id_idx ON public.quiz_attempts(user_id);
-
--- Curriculum Syllabus Roadmap & Practice Exams indexes
-CREATE INDEX IF NOT EXISTS syllabus_topics_syllabus_id_idx ON public.syllabus_topics(syllabus_id);
-CREATE INDEX IF NOT EXISTS syllabus_topics_user_id_idx ON public.syllabus_topics(user_id);
-CREATE INDEX IF NOT EXISTS sample_papers_syllabus_id_idx ON public.sample_papers(syllabus_id);
-CREATE INDEX IF NOT EXISTS sample_papers_user_id_idx ON public.sample_papers(user_id);`;
 
 export default function SettingsModal({ isOpen, onClose, user }: SettingsModalProps) {
   const router = useRouter();
   const supabase = createClient();
   
-  const [activeTab, setActiveTab] = useState<'profile' | 'support' | 'database' | 'danger'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'support' | 'danger'>('profile');
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [showQr, setShowQr] = useState(false);
@@ -73,12 +46,7 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
 
   if (!isOpen) return null;
 
-  const handleCopySql = () => {
-    navigator.clipboard.writeText(SQL_MIGRATION);
-    setCopiedSql(true);
-    toast.success('SQL migration script copied! Paste it in Supabase SQL editor.');
-    setTimeout(() => setCopiedSql(false), 2000);
-  };
+
 
   const handleCopyUpi = () => {
     navigator.clipboard.writeText(upiId);
@@ -124,7 +92,7 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
 
       {/* Glow highlight */}
       <div className={`absolute w-[400px] h-[400px] rounded-full blur-[90px] opacity-25 pointer-events-none transition-all duration-500 z-0 ${
-        activeTab === 'danger' ? 'bg-red-500/25' : activeTab === 'database' ? 'bg-primary/20' : 'bg-rose-500/20'
+        activeTab === 'danger' ? 'bg-red-500/25' : activeTab === 'profile' ? 'bg-primary/20' : 'bg-rose-500/20'
       }`} />
 
       {/* Modal Dialog Card Container */}
@@ -161,16 +129,6 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
           >
             <Coffee className="w-4 h-4" />
             <span>Support Developer</span>
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('database')}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all active-press cursor-pointer ${
-              activeTab === 'database' ? 'bg-emerald-500/10 text-emerald-400' : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
-            }`}
-          >
-            <Database className="w-4 h-4" />
-            <span>SQL Migrations</span>
           </button>
           
           <button
@@ -300,36 +258,7 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
               </div>
             )}
 
-            {/* DATABASE SQL MIGRATIONS */}
-            {activeTab === 'database' && (
-              <div className="space-y-4 animate-scale-in">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h4 className="text-base font-bold text-foreground">Database Index Migrations</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Optimize your production Supabase database performance. Running these performance indexes on your Supabase dashboard speeds up flashcard due-date calculations and foreign key search queries by up to 10x.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleCopySql}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-primary hover:bg-primary-hover text-white active-press transition-all cursor-pointer shrink-0"
-                  >
-                    {copiedSql ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedSql ? 'Copied' : 'Copy SQL'}</span>
-                  </button>
-                </div>
-                
-                <div className="relative rounded-xl border border-border overflow-hidden bg-muted/40 max-h-[220px] overflow-y-auto">
-                  <pre className="p-4 text-[9px] font-mono text-muted-foreground leading-relaxed text-left whitespace-pre select-all">
-                    {SQL_MIGRATION}
-                  </pre>
-                </div>
-                <div className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
-                  <HelpCircle className="w-3 h-3 text-primary" />
-                  <span>To run: Go to Supabase Dashboard &rarr; SQL Editor &rarr; Paste and click Run.</span>
-                </div>
-              </div>
-            )}
+
 
             {/* DANGER ZONE */}
             {activeTab === 'danger' && (
