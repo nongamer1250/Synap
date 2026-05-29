@@ -41,6 +41,7 @@ export default function SyllabusDetailPage() {
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [newExamDate, setNewExamDate] = useState('');
   const [updatingDate, setUpdatingDate] = useState(false);
+  const [activeTab, setActiveTab] = useState<'topics' | 'calendar'>('topics');
 
   // Generation status
   const [generating, setGenerating] = useState<GeneratingType>({});
@@ -113,6 +114,14 @@ export default function SyllabusDetailPage() {
         prev.map((t) => (t.id === topicId ? { ...t, status: json.data.status } : t))
       );
       toast.success('Status updated');
+
+      if (status === 'completed') {
+        const { updateStudyStreak } = await import('@/lib/streak');
+        const { streak, updated } = await updateStudyStreak();
+        if (updated) {
+          toast.success(`Study streak updated! 🔥 ${streak} days!`);
+        }
+      }
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || 'Failed to update status');
@@ -154,6 +163,13 @@ export default function SyllabusDetailPage() {
         setTimeout(() => {
           router.push('/dashboard/quiz');
         }, 1500);
+      }
+
+      // Update study streak on successful study material generation
+      const { updateStudyStreak } = await import('@/lib/streak');
+      const { streak, updated } = await updateStudyStreak();
+      if (updated) {
+        toast.success(`Study streak updated! 🔥 ${streak} days!`);
       }
     } catch (err: any) {
       console.error(err);
@@ -729,146 +745,366 @@ export default function SyllabusDetailPage() {
         </div>
       </div>
 
+      {/* Tab Switcher */}
+      <div className="flex border-b border-border/40 gap-2">
+        <button
+          onClick={() => setActiveTab('topics')}
+          className={`px-5 py-3 text-xs sm:text-sm font-bold border-b-2 cursor-pointer transition-all ${
+            activeTab === 'topics'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          📚 Study Plan & Topics
+        </button>
+        <button
+          onClick={() => setActiveTab('calendar')}
+          className={`px-5 py-3 text-xs sm:text-sm font-bold border-b-2 cursor-pointer transition-all flex items-center gap-1.5 ${
+            activeTab === 'calendar'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Calendar className="w-4 h-4 text-yellow-500" />
+          <span>📅 AI Study Planner</span>
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Topics List - Left/Main side */}
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            📚 Study Plan & Topics
-          </h2>
+        {activeTab === 'topics' && (
+          <div className="lg:col-span-2 space-y-4">
+            <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
+              📚 Study Plan & Topics
+            </h2>
 
-          <div className="space-y-3">
-            {topics.map((topic, index) => {
-              const isExpanded = expandedTopic === topic.id;
-              const isGenerating = generating[topic.id] || null;
+            <div className="space-y-3">
+              {topics.map((topic, index) => {
+                const isExpanded = expandedTopic === topic.id;
+                const isGenerating = generating[topic.id] || null;
 
-              return (
-                <div
-                  key={topic.id}
-                  className={`rounded-2xl border transition-all duration-300 bg-card overflow-hidden ${
-                    isExpanded
-                      ? 'border-primary shadow-lg shadow-primary/5'
-                      : 'border-border hover:border-primary/50 hover:bg-muted/5'
-                  }`}
-                >
-                  {/* Topic Accordion Header */}
+                return (
                   <div
-                    onClick={() => setExpandedTopic(isExpanded ? null : topic.id)}
-                    className="p-5 flex items-center justify-between gap-4 cursor-pointer select-none"
+                    key={topic.id}
+                    className={`rounded-2xl border transition-all duration-300 bg-card overflow-hidden ${
+                      isExpanded
+                        ? 'border-primary shadow-lg shadow-primary/5'
+                        : 'border-border hover:border-primary/50 hover:bg-muted/5'
+                    }`}
                   >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground shrink-0">
-                        {index + 1}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-bold text-foreground truncate">{topic.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-md">
-                          {topic.description || 'No description available.'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                      {/* Status select (Stops propagation so it doesn't trigger expand) */}
-                      <select
-                        value={topic.status}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleUpdateTopicStatus(topic.id, e.target.value as any);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        className={`text-xs font-bold px-2.5 py-1.5 rounded-full border border-border cursor-pointer active-press ${
-                          topic.status === 'completed'
-                            ? 'bg-success/15 border-success/35 text-success'
-                            : topic.status === 'in_progress'
-                            ? 'bg-orange-500/15 border-orange-500/35 text-orange-500'
-                            : 'bg-muted text-muted-foreground'
-                        }`}
-                      >
-                        <option value="not_started">Not Started</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                      </select>
-
-                      {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                    </div>
-                  </div>
-
-                  {/* Topic Expandable Content */}
-                  {isExpanded && (
-                    <div className="border-t border-border/40 p-5 bg-muted/20 space-y-4 animate-slide-down">
-                      {topic.description && (
-                        <div>
-                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Topic Focus</span>
-                          <p className="text-sm text-foreground/80 mt-1 leading-relaxed">{topic.description}</p>
+                    {/* Topic Accordion Header */}
+                    <div
+                      onClick={() => setExpandedTopic(isExpanded ? null : topic.id)}
+                      className="p-5 flex items-center justify-between gap-4 cursor-pointer select-none"
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground shrink-0">
+                          {index + 1}
                         </div>
-                      )}
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-foreground truncate">{topic.title}</h3>
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-md">
+                            {topic.description || 'No description available.'}
+                          </p>
+                        </div>
+                      </div>
 
-                      <div className="flex flex-wrap items-center gap-3 pt-2">
-                        {/* 1. Study Notes Button */}
-                        {topic.note_id ? (
-                          <Link
-                            href={`/dashboard/notes/${topic.note_id}`}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-success/10 hover:bg-success/20 text-success border border-success/20 transition-all"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>View Study Notes</span>
-                          </Link>
-                        ) : (
-                          <button
-                            onClick={() => handleGenerateMaterial(topic.id, 'notes')}
-                            disabled={!!isGenerating}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-white border border-primary/20 transition-all cursor-pointer active-press"
-                          >
-                            {isGenerating === 'notes' ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Sparkles className="w-3.5 h-3.5" />
-                            )}
-                            <span>Generate Study Notes</span>
-                          </button>
+                      <div className="flex items-center gap-3 shrink-0">
+                        {/* Status select (Stops propagation so it doesn't trigger expand) */}
+                        <select
+                          value={topic.status}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleUpdateTopicStatus(topic.id, e.target.value as any);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`text-xs font-bold px-2.5 py-1.5 rounded-full border border-border cursor-pointer active-press ${
+                            topic.status === 'completed'
+                              ? 'bg-success/15 border-success/35 text-success'
+                              : topic.status === 'in_progress'
+                              ? 'bg-orange-500/15 border-orange-500/35 text-orange-500'
+                              : 'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          <option value="not_started">Not Started</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                        </select>
+
+                        {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                      </div>
+                    </div>
+
+                    {/* Topic Expandable Content */}
+                    {isExpanded && (
+                      <div className="border-t border-border/40 p-5 bg-muted/20 space-y-4 animate-slide-down">
+                        {topic.description && (
+                          <div>
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Topic Focus</span>
+                            <p className="text-sm text-foreground/80 mt-1 leading-relaxed">{topic.description}</p>
+                          </div>
                         )}
 
-                        {/* 2. Flashcards Button */}
-                        <button
-                          onClick={() => handleGenerateMaterial(topic.id, 'flashcards')}
-                          disabled={!!isGenerating}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-card hover:bg-muted border border-border text-foreground transition-all cursor-pointer active-press"
-                        >
-                          {isGenerating === 'flashcards' ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <div className="flex flex-wrap items-center gap-3 pt-2">
+                          {/* 1. Study Notes Button */}
+                          {topic.note_id ? (
+                            <Link
+                              href={`/dashboard/notes/${topic.note_id}`}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-success/10 hover:bg-success/20 text-success border border-success/20 transition-all"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>View Study Notes</span>
+                            </Link>
                           ) : (
-                            <CreditCard className="w-3.5 h-3.5" />
+                            <button
+                              onClick={() => handleGenerateMaterial(topic.id, 'notes')}
+                              disabled={!!isGenerating}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-white border border-primary/20 transition-all cursor-pointer active-press"
+                            >
+                              {isGenerating === 'notes' ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Sparkles className="w-3.5 h-3.5" />
+                              )}
+                              <span>Generate Study Notes</span>
+                            </button>
                           )}
-                          <span>Generate Flashcards</span>
-                        </button>
 
-                        {/* 3. Quiz Button */}
-                        <button
-                          onClick={() => handleGenerateMaterial(topic.id, 'quiz')}
-                          disabled={!!isGenerating}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-card hover:bg-muted border border-border text-foreground transition-all cursor-pointer active-press"
-                        >
-                          {isGenerating === 'quiz' ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <HelpCircle className="w-3.5 h-3.5" />
-                          )}
-                          <span>Generate Practice Quiz</span>
-                        </button>
+                          {/* 2. Flashcards Button */}
+                          <button
+                            onClick={() => handleGenerateMaterial(topic.id, 'flashcards')}
+                            disabled={!!isGenerating}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-card hover:bg-muted border border-border text-foreground transition-all cursor-pointer active-press"
+                          >
+                            {isGenerating === 'flashcards' ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <CreditCard className="w-3.5 h-3.5" />
+                            )}
+                            <span>Generate Flashcards</span>
+                          </button>
+
+                          {/* 3. Quiz Button */}
+                          <button
+                            onClick={() => handleGenerateMaterial(topic.id, 'quiz')}
+                            disabled={!!isGenerating}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-card hover:bg-muted border border-border text-foreground transition-all cursor-pointer active-press"
+                          >
+                            {isGenerating === 'quiz' ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <HelpCircle className="w-3.5 h-3.5" />
+                            )}
+                            <span>Generate Practice Quiz</span>
+                          </button>
+                        </div>
+
+                        {!topic.note_id && (
+                          <p className="text-[10px] text-muted-foreground italic">
+                            💡 Generating flashcards or quizzes will automatically generate comprehensive notes for this topic first.
+                          </p>
+                        )}
                       </div>
-
-                      {!topic.note_id && (
-                        <p className="text-[10px] text-muted-foreground italic">
-                          💡 Generating flashcards or quizzes will automatically generate comprehensive notes for this topic first.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Calendar Checklist View */}
+        {activeTab === 'calendar' && (
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
+                📅 AI Study Calendar
+              </h2>
+              {syllabus.exam_date && (
+                <span className="text-xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-lg">
+                  Spaced Distribution Roadmap
+                </span>
+              )}
+            </div>
+
+            {!syllabus.exam_date ? (
+              <div className="glass rounded-3xl p-8 text-center space-y-4 border border-dashed border-border bg-card">
+                <div className="w-12 h-12 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center mx-auto">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-bold text-sm">Exam Date Required</h4>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                    To generate your day-by-day study roadmap, please set your target exam date using the editor in the header.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsEditingDate(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-primary cursor-pointer active-press"
+                >
+                  Set Exam Date
+                </button>
+              </div>
+            ) : (
+              <div className="relative pl-6 border-l-2 border-primary/20 space-y-6">
+                {(() => {
+                  const examDate = new Date(syllabus.exam_date);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const diffTime = examDate.getTime() - today.getTime();
+                  const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  
+                  const scheduledDays = (() => {
+                    if (daysLeft <= 0) {
+                      return [{
+                        dayNumber: 1,
+                        date: today,
+                        topics: topics
+                      }];
+                    }
+
+                    const numDays = daysLeft;
+                    const result = [];
+
+                    if (numDays >= topics.length) {
+                      const interval = numDays / topics.length;
+                      topics.forEach((topic, index) => {
+                        const dayOffset = Math.floor(index * interval);
+                        const scheduledDate = new Date(today);
+                        scheduledDate.setDate(today.getDate() + dayOffset);
+                        result.push({
+                          dayNumber: dayOffset + 1,
+                          date: scheduledDate,
+                          topics: [topic]
+                        });
+                      });
+                    } else {
+                      const topicsPerDay = Math.ceil(topics.length / numDays);
+                      for (let i = 0; i < numDays; i++) {
+                        const scheduledDate = new Date(today);
+                        scheduledDate.setDate(today.getDate() + i);
+                        const dayTopics = topics.slice(i * topicsPerDay, (i + 1) * topicsPerDay);
+                        if (dayTopics.length > 0) {
+                          result.push({
+                            dayNumber: i + 1,
+                            date: scheduledDate,
+                            topics: dayTopics
+                          });
+                        }
+                      }
+                    }
+                    return result;
+                  })();
+
+                  return scheduledDays.map((day, idx) => {
+                    const completedCount = day.topics.filter(t => t.status === 'completed').length;
+                    const totalCount = day.topics.length;
+                    const dayPercent = Math.round((completedCount / totalCount) * 100);
+
+                    return (
+                      <div key={idx} className="relative group">
+                        {/* Timeline dot */}
+                        <div className={`absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 bg-background transition-all ${
+                          dayPercent === 100 
+                            ? 'border-success bg-success' 
+                            : dayPercent > 0 
+                            ? 'border-orange-500 bg-orange-500/20' 
+                            : 'border-primary'
+                        }`} />
+
+                        <div className="glass rounded-2xl border border-border bg-card p-5 space-y-4">
+                          {/* Day Header */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
+                            <div>
+                              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                                <span>Day {day.dayNumber}</span>
+                                <span className="text-xs text-muted-foreground font-medium">
+                                  • {day.date.toLocaleDateString(undefined, {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })}
+                                </span>
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-semibold text-muted-foreground">
+                                {completedCount}/{totalCount} completed
+                              </span>
+                              <div className="w-16 bg-muted h-1.5 rounded-full overflow-hidden">
+                                <div 
+                                  className="bg-primary h-full transition-all duration-300"
+                                  style={{ width: `${dayPercent}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Topics list for this day */}
+                          <div className="space-y-3">
+                            {day.topics.map((topic) => {
+                              const isGenerating = generating[topic.id] || null;
+
+                              return (
+                                <div key={topic.id} className="flex items-start justify-between gap-3 text-xs p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                                  <div className="flex items-start gap-2.5 min-w-0">
+                                    <input
+                                      type="checkbox"
+                                      checked={topic.status === 'completed'}
+                                      onChange={() => {
+                                        const nextStatus = topic.status === 'completed' ? 'not_started' : 'completed';
+                                        handleUpdateTopicStatus(topic.id, nextStatus);
+                                      }}
+                                      className="mt-0.5 rounded border-border text-primary focus:ring-primary h-3.5 w-3.5 cursor-pointer"
+                                    />
+                                    <div className="min-w-0">
+                                      <span className={`font-semibold block text-foreground truncate max-w-sm ${topic.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
+                                        {topic.title}
+                                      </span>
+                                      {topic.description && (
+                                        <span className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                                          {topic.description}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="shrink-0 flex items-center gap-2">
+                                    {topic.note_id ? (
+                                      <Link
+                                        href={`/dashboard/notes/${topic.note_id}`}
+                                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold border border-success/30 bg-success/5 text-success hover:bg-success/15 transition-all"
+                                      >
+                                        Read Notes
+                                      </Link>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleGenerateMaterial(topic.id, 'notes')}
+                                        disabled={!!isGenerating}
+                                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary text-white hover:bg-primary/95 cursor-pointer transition-all active-press"
+                                      >
+                                        {isGenerating === 'notes' ? (
+                                          <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                                        ) : (
+                                          <Sparkles className="w-2.5 h-2.5 text-yellow-300" />
+                                        )}
+                                        <span>Study</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Custom Sample Paper Panel - Right side */}
         <div className="space-y-6">

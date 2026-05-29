@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import {
-  ChevronLeft, ChevronRight, RotateCcw, Loader2, Zap, Brain, CheckCircle, Calendar, RefreshCw
+  ChevronLeft, ChevronRight, RotateCcw, Loader2, Zap, Brain, CheckCircle, Calendar, RefreshCw,
+  Download, Copy
 } from 'lucide-react';
 import type { Flashcard, Note } from '@/types';
 
@@ -192,6 +193,50 @@ export default function FlashcardsPage() {
     }
   };
 
+  const handleExportQuizlet = () => {
+    if (flashcards.length === 0) return;
+    
+    const content = flashcards.map(card => {
+      const q = card.question.replace(/\t/g, ' ').replace(/\n/g, '<br>');
+      const a = card.answer.replace(/\t/g, ' ').replace(/\n/g, '<br>');
+      return `${q}\t${a}`;
+    }).join('\n');
+
+    navigator.clipboard.writeText(content)
+      .then(() => {
+        toast.success('Deck copied to clipboard! Paste it into Quizlet\'s Import page. 📋');
+      })
+      .catch(() => {
+        toast.error('Failed to copy to clipboard');
+      });
+  };
+
+  const handleExportAnki = () => {
+    if (flashcards.length === 0) return;
+
+    const content = flashcards.map(card => {
+      const q = card.question.replace(/\t/g, ' ').replace(/\n/g, '<br>');
+      const a = card.answer.replace(/\t/g, ' ').replace(/\n/g, '<br>');
+      return `${q}\t${a}`;
+    }).join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const selectedNote = notes.find(n => n.id === selectedNoteId);
+    const title = selectedNote ? selectedNote.title.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'deck';
+
+    link.href = url;
+    link.download = `synap-anki-${title}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success('Anki import file downloaded! 🃏');
+  };
+
   const diffColor: Record<string, string> = {
     easy: 'hsl(142 71% 65%)',
     medium: 'hsl(38 92% 65%)',
@@ -200,11 +245,31 @@ export default function FlashcardsPage() {
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in pb-12">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold">Flashcards</h1>
-          <p className="text-muted-foreground mt-1">Practice active recall with SM-2 Spaced Repetition</p>
+          <p className="text-muted-foreground mt-1 text-sm">Practice active recall with SM-2 Spaced Repetition</p>
         </div>
+        {selectedNoteId && flashcards.length > 0 && (
+          <div className="flex items-center gap-2 shrink-0 animate-scale-in">
+            <button
+              onClick={handleExportQuizlet}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-border bg-card hover:bg-muted text-foreground transition-all cursor-pointer hover:border-primary active-press"
+              title="Copy deck to clipboard for Quizlet import"
+            >
+              <Copy className="w-3.5 h-3.5 text-primary" />
+              <span>Quizlet Export</span>
+            </button>
+            <button
+              onClick={handleExportAnki}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-border bg-card hover:bg-muted text-foreground transition-all cursor-pointer hover:border-primary active-press"
+              title="Download deck as .txt file for Anki import"
+            >
+              <Download className="w-3.5 h-3.5 text-primary" />
+              <span>Anki Export</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Note Selector & Generate */}

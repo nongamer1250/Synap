@@ -55,14 +55,23 @@ export default async function DashboardPage() {
     },
   ];
 
+  const streak = user.user_metadata?.study_streak || 0;
+
   return (
     <div className="max-w-5xl mx-auto space-y-10 animate-fade-in pb-12">
       
       {/* ── HEADER ────────────────────────────────────────── */}
       <div className="flex items-center justify-between border-b border-border/40 pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Create new notes and explore resources</p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Create new notes and explore resources</p>
+          </div>
+          {streak > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-xs font-bold animate-pulse-soft">
+              🔥 <span className="font-mono">{streak}</span> Day Streak
+            </div>
+          )}
         </div>
         <ResetDataButton />
       </div>

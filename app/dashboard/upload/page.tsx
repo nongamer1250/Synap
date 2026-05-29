@@ -233,6 +233,16 @@ export default function UploadPage() {
       setStep('done');
       toast.success('Notes generated! Redirecting…');
 
+      try {
+        const { updateStudyStreak } = await import('@/lib/streak');
+        const { streak, updated } = await updateStudyStreak();
+        if (updated) {
+          toast.success(`Study streak updated! 🔥 ${streak} days!`);
+        }
+      } catch (streakErr) {
+        console.error(streakErr);
+      }
+
       setTimeout(() => {
         router.push(`/dashboard/notes/${noteId}`);
       }, 1500);
@@ -353,6 +363,16 @@ export default function UploadPage() {
 
       setStep('done');
       toast.success('Notes generated from YouTube! Redirecting…');
+
+      try {
+        const { updateStudyStreak } = await import('@/lib/streak');
+        const { streak, updated } = await updateStudyStreak();
+        if (updated) {
+          toast.success(`Study streak updated! 🔥 ${streak} days!`);
+        }
+      } catch (streakErr) {
+        console.error(streakErr);
+      }
 
       setTimeout(() => {
         router.push(`/dashboard/notes/${noteId}`);
