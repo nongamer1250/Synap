@@ -143,4 +143,4 @@ Configure all environment variables inside your Vercel Dashboard under **Setting
 
 ## 📝 License
 
-MIT — Free to use, modify, study, and deploy.
+Proprietary — Free for personal educational study. Unauthorized modification, redistribution, or redeployment is strictly prohibited.
