@@ -78,6 +78,20 @@ export async function POST(request: Request) {
       if (textContent.trim().length < 50) {
         throw new Error('Parsed PDF text is too short or empty. Please make sure the PDF has selectable text.');
       }
+    } else if (upload.file_type === 'image') {
+      // Extract text from Image using LLM Vision OCR
+      const base64Image = fileBuffer.toString('base64');
+      const ocrPrompt = 'Extract all study notes, text, equations, and information from this lecture page/notes image. Keep it structured and clean. Only return the extracted study notes text.';
+      const { completeVision } = await import('@/lib/ai/llm');
+      
+      const extension = upload.file_url.split('.').pop()?.toLowerCase() || 'jpeg';
+      const mimeType = extension === 'png' ? 'image/png' : (extension === 'webp' ? 'image/webp' : 'image/jpeg');
+
+      textContent = await completeVision(base64Image, mimeType, ocrPrompt);
+
+      if (textContent.trim().length < 20) {
+        throw new Error('Failed to extract text from the image scan. Please ensure the image is clear and contains readable text.');
+      }
     } else {
       throw new Error('Unsupported file type for processing.');
     }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { LogOut, Bell, Menu } from 'lucide-react';
@@ -14,12 +15,62 @@ interface HeaderProps {
 export default function Header({ user, onMenuClick }: HeaderProps) {
   const router = useRouter();
   const supabase = createClient();
+  const [isNative, setIsNative] = useState(false);
+
+  useEffect(() => {
+    setIsNative(typeof window !== 'undefined' && !!(window as any).Capacitor);
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success('Signed out');
     router.push('/login');
     router.refresh();
+  };
+
+  const handleScheduleReminders = async () => {
+    try {
+      const { LocalNotifications } = require('@capacitor/local-notifications');
+      
+      const perm = await LocalNotifications.requestPermissions();
+      if (perm.display !== 'granted') {
+        toast.error('Notification permissions denied!');
+        return;
+      }
+
+      await LocalNotifications.cancel({
+        notifications: [{ id: 101 }]
+      });
+
+      const now = new Date();
+      const scheduledTime = new Date();
+      scheduledTime.setHours(18, 0, 0, 0);
+
+      if (scheduledTime.getTime() <= now.getTime()) {
+        scheduledTime.setDate(scheduledTime.getDate() + 1);
+      }
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: "Synap Study Call! 🧠",
+            body: "Keep your study streak burning. You have recall flashcards due today!",
+            id: 101,
+            schedule: {
+              at: scheduledTime,
+              allowWhileIdle: true,
+              every: 'day'
+            },
+            sound: 'default'
+          }
+        ]
+      });
+
+      toast.success('Daily study reminder scheduled at 6:00 PM! ⏰');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Failed to schedule local reminders');
+    }
   };
 
   return (
@@ -40,7 +91,11 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        <button className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+        <button 
+          onClick={isNative ? handleScheduleReminders : undefined}
+          title={isNative ? "Schedule Study Reminders" : "System Notifications"}
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
           <Bell className="w-4.5 h-4.5" style={{ width: '1.1rem', height: '1.1rem' }} />
         </button>
         <button

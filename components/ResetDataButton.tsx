@@ -28,7 +28,7 @@ export default function ResetDataButton() {
       }
 
       toast.success('All dashboard data has been reset!');
-      router.refresh(); // Refresh the page to update stats and recent notes
+      window.location.href = '/dashboard';
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : 'Failed to reset data. Please try again.');

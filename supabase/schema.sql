@@ -155,10 +155,9 @@ CREATE TABLE IF NOT EXISTS document_chunks (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Vector similarity search index (IVFFlat for approximate nearest neighbor)
-CREATE INDEX IF NOT EXISTS document_chunks_embedding_idx
-  ON document_chunks USING ivfflat (embedding vector_cosine_ops)
-  WITH (lists = 50);
+-- Vector similarity search index (HNSW index for high performance approximate nearest neighbor search)
+CREATE INDEX IF NOT EXISTS document_chunks_embedding_hnsw_idx
+  ON document_chunks USING hnsw (embedding vector_cosine_ops);
 
 -- ── Row Level Security ────────────────────────────────────────
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -285,4 +284,33 @@ ALTER TABLE public.sample_papers ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage own syllabi" ON public.syllabi FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users manage own syllabus topics" ON public.syllabus_topics FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users manage own sample papers" ON public.sample_papers FOR ALL USING (auth.uid() = user_id);
+
+-- ============================================================
+-- Performance Indexes for Scaling to 10k+ Users
+-- ============================================================
+
+-- Uploads & Transcripts
+CREATE INDEX IF NOT EXISTS uploads_user_id_idx ON public.uploads(user_id);
+CREATE INDEX IF NOT EXISTS transcripts_upload_id_idx ON public.transcripts(upload_id);
+CREATE INDEX IF NOT EXISTS transcripts_user_id_idx ON public.transcripts(user_id);
+
+-- Notes & Flashcards
+CREATE INDEX IF NOT EXISTS notes_upload_id_idx ON public.notes(upload_id);
+CREATE INDEX IF NOT EXISTS notes_user_id_idx ON public.notes(user_id);
+CREATE INDEX IF NOT EXISTS flashcards_note_id_idx ON public.flashcards(note_id);
+CREATE INDEX IF NOT EXISTS flashcards_user_id_idx ON public.flashcards(user_id);
+CREATE INDEX IF NOT EXISTS flashcards_due_date_idx ON public.flashcards(due_date);
+
+-- Quizzes & Attempts
+CREATE INDEX IF NOT EXISTS quizzes_note_id_idx ON public.quizzes(note_id);
+CREATE INDEX IF NOT EXISTS quizzes_user_id_idx ON public.quizzes(user_id);
+CREATE INDEX IF NOT EXISTS quiz_attempts_quiz_id_idx ON public.quiz_attempts(quiz_id);
+CREATE INDEX IF NOT EXISTS quiz_attempts_user_id_idx ON public.quiz_attempts(user_id);
+
+-- Syllabus & Practice Exams
+CREATE INDEX IF NOT EXISTS syllabus_topics_syllabus_id_idx ON public.syllabus_topics(syllabus_id);
+CREATE INDEX IF NOT EXISTS syllabus_topics_user_id_idx ON public.syllabus_topics(user_id);
+CREATE INDEX IF NOT EXISTS sample_papers_syllabus_id_idx ON public.sample_papers(syllabus_id);
+CREATE INDEX IF NOT EXISTS sample_papers_user_id_idx ON public.sample_papers(user_id);
+
 

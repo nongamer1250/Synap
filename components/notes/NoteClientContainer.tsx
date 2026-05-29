@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NoteActions from './NoteActions';
 import NoteContent from './NoteContent';
@@ -32,6 +32,24 @@ interface NoteClientContainerProps {
 
 export default function NoteClientContainer({ note, flashcardsCount, quizzesCount }: NoteClientContainerProps) {
   const [showRevision, setShowRevision] = useState(false);
+  const [isCached, setIsCached] = useState(false);
+
+  useEffect(() => {
+    if (note) {
+      import('@/lib/offline-cache').then((cache) => {
+        cache.saveOfflineNote({
+          id: note.id,
+          title: note.title,
+          content: note.content,
+          summary: note.summary || undefined,
+          key_concepts: note.key_concepts,
+          updated_at: new Date().toISOString()
+        }).then(() => {
+          setIsCached(true);
+        });
+      });
+    }
+  }, [note]);
 
   return (
     <div className={`mx-auto transition-all duration-300 ${showRevision ? 'max-w-7xl' : 'max-w-4xl'} animate-fade-in`}>
@@ -48,7 +66,14 @@ export default function NoteClientContainer({ note, flashcardsCount, quizzesCoun
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{note.title}</h1>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-2xl font-bold text-foreground">{note.title}</h1>
+                {isCached && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-semibold bg-success/10 border border-success/20 text-success tracking-wide animate-scale-in">
+                    ✓ Cached Offline
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground mt-1">{formatDate(note.created_at)}</p>
             </div>
             <NoteActions noteId={note.id} />

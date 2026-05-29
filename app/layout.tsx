@@ -5,6 +5,8 @@ import Script from 'next/script';
 import PwaInstallPrompt from '@/components/layout/PwaInstallPrompt';
 import SmoothScrollProvider from '@/components/providers/SmoothScrollProvider';
 import ScrollReveal from '@/components/layout/ScrollReveal';
+import { Analytics } from '@vercel/analytics/react';
+import DeepLinkProvider from '@/components/providers/DeepLinkProvider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
   },
   description:
     'Upload lecture audio or PDFs and get instant AI-generated study notes, flashcards, quizzes, and an AI tutor — for free.',
-  keywords: ['AI study assistant', 'lecture notes', 'flashcards', 'quiz generator', 'transcription', 'active recall'],
+  keywords: ['AI study assistant', 'lecture notes', 'flashcards', 'quiz generator', 'transcription', 'active recall', 'AI study notes', 'AI flashcard generator', 'AI quiz generator', 'lecture notes AI', 'PDF to flashcards', 'YouTube to notes'],
   manifest: '/manifest.json',
   alternates: {
     canonical: '/',
@@ -85,9 +87,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
+        <DeepLinkProvider />
         <SmoothScrollProvider>
           {children}
         </SmoothScrollProvider>
+        <Analytics />
         <Toaster
           position="top-right"
           toastOptions={{

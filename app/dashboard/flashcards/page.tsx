@@ -40,9 +40,29 @@ export default function FlashcardsPage() {
     try {
       const res = await fetch(`/api/flashcards?note_id=${nid}`);
       const data = await res.json();
-      setFlashcards(data.data || []);
-    } catch {
-      toast.error('Failed to load flashcards');
+      const cards = data.data || [];
+      setFlashcards(cards);
+      
+      // Save success response to local IndexedDB cache
+      import('@/lib/offline-cache').then((cache) => {
+        cache.saveOfflineDeck(nid, cards);
+      });
+    } catch (err) {
+      console.error(err);
+      // Attempt load from IndexedDB offline store on failure
+      try {
+        const cache = await import('@/lib/offline-cache');
+        const cachedCards = await cache.getOfflineDeck(nid);
+        if (cachedCards && cachedCards.length > 0) {
+          setFlashcards(cachedCards);
+          toast.success('Offline mode: Loaded deck from local cache! 🔌');
+        } else {
+          toast.error('Failed to load flashcards');
+        }
+      } catch (cacheErr) {
+        console.error('IndexedDB fetch error:', cacheErr);
+        toast.error('Failed to load flashcards');
+      }
     } finally {
       setLoading(false);
     }

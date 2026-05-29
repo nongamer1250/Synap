@@ -1,0 +1,12 @@
+{
+  "appId": "bond.synap.app",
+  "appName": "Synap",
+  "webDir": "public",
+  "server": {
+    "url": "https://www.synap.bond",
+    "cleartext": true
+  },
+  "android": {
+    "appendUserAgent": "SynapAndroid"
+  }
+}

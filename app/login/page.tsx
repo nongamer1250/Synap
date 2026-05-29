@@ -42,9 +42,14 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    const isApp = typeof window !== 'undefined' && (window.navigator.userAgent.includes('SynapAndroid') || !!(window as any).Capacitor);
+    const redirectTo = isApp 
+      ? 'bond.synap.app://auth/callback' 
+      : `${window.location.origin}/auth/callback`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo },
     });
     if (error) toast.error(error.message);
   };

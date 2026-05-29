@@ -2,12 +2,20 @@
 
 import React from 'react';
 import { ReactLenis } from 'lenis/react';
+import { usePathname } from 'next/navigation';
 
 interface SmoothScrollProviderProps {
   children: React.ReactNode;
 }
 
 export default function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith('/dashboard');
+
+  if (isDashboard) {
+    return <>{children}</>;
+  }
+
   return (
     <ReactLenis
       root
@@ -20,3 +28,4 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     </ReactLenis>
   );
 }
+

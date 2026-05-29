@@ -12,6 +12,7 @@ const ALLOWED_AUDIO_TYPES = [
   'audio/ogg',
 ];
 const ALLOWED_PDF_TYPES = ['application/pdf'];
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB
 const MAX_PDF_SIZE = 10 * 1024 * 1024;   // 10MB
 
@@ -35,20 +36,23 @@ export async function POST(request: Request) {
     // Determine file type
     let isAudio = ALLOWED_AUDIO_TYPES.includes(file.type);
     let isPdf = ALLOWED_PDF_TYPES.includes(file.type);
+    let isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
 
     // Fallback: Check file extension if browser MIME-type detection is missing or incorrect (common on mobile browsers)
-    if (!isAudio && !isPdf && file.name) {
+    if (!isAudio && !isPdf && !isImage && file.name) {
       const extension = file.name.split('.').pop()?.toLowerCase();
       if (extension === 'pdf') {
         isPdf = true;
       } else if (['mp3', 'wav', 'm4a', 'webm', 'ogg'].includes(extension || '')) {
         isAudio = true;
+      } else if (['jpg', 'jpeg', 'png', 'webp'].includes(extension || '')) {
+        isImage = true;
       }
     }
 
-    if (!isAudio && !isPdf) {
+    if (!isAudio && !isPdf && !isImage) {
       return NextResponse.json(
-        { error: 'Unsupported file type. Upload MP3, WAV, M4A, WebM, OGG, or PDF.' },
+        { error: 'Unsupported file type. Upload MP3, WAV, M4A, WebM, OGG, PDF, or Image.' },
         { status: 400 }
       );
     }
@@ -88,7 +92,7 @@ export async function POST(request: Request) {
       .insert({
         user_id: user.id,
         title: title || file.name.replace(/\.[^/.]+$/, ''),
-        file_type: isAudio ? 'audio' : 'pdf',
+        file_type: isAudio ? 'audio' : (isPdf ? 'pdf' : 'image'),
         file_url: publicUrl,
         file_size: file.size,
         status: 'pending',

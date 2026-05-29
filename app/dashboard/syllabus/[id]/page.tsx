@@ -215,17 +215,16 @@ export default function SyllabusDetailPage() {
     if (!confirm('Are you sure you want to delete this sample paper?')) return;
 
     try {
-      // In the remote schema, the table cascades or we can delete it. Since we only want to remove it locally or call DELETE:
-      // Note: We don't have a direct API DELETE route for sample-papers, but we can do a supabase deletion or write one.
-      // For simplicity, we can let Supabase delete it directly if we had the client, or write a quick endpoint.
-      // Wait, we don't have a delete route in sample-paper route, let's look at c:\turbo learn\turbolearn\app\api\syllabus\[id]\sample-paper\route.ts
-      // It has POST and GET.
-      // If we want to delete a paper, let's write a DELETE method in `app/api/syllabus/[id]/sample-paper/route.ts` or we can call Supabase directly since we are on client side!
-      // Yes! Supabase client allows deletion if RLS is enabled:
-      const { createClient } = await import('@/lib/supabase/client');
-      const supabase = createClient();
-      const { error } = await supabase.from('sample_papers').delete().eq('id', paperId);
-      if (error) throw error;
+      const res = await fetch(`/api/syllabus/${id}/sample-paper`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ paperId }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to delete sample paper');
 
       setSamplePapers((prev) => prev.filter((p) => p.id !== paperId));
       toast.success('Sample paper deleted');

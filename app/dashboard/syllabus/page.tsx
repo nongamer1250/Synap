@@ -19,6 +19,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import type { Syllabus } from '@/types';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 type UploadStep = 'idle' | 'uploading' | 'extracting' | 'done';
 
@@ -34,6 +35,40 @@ export default function SyllabusListPage() {
   const [examDate, setExamDate] = useState('');
   const [uploadStep, setUploadStep] = useState<UploadStep>('idle');
   const [customApiKey, setCustomApiKey] = useState('');
+  const [isNative, setIsNative] = useState(false);
+
+  useEffect(() => {
+    setIsNative(typeof window !== 'undefined' && !!(window as any).Capacitor);
+  }, []);
+
+  const handleCameraScan = async () => {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera,
+      });
+
+      if (image && image.webPath) {
+        setUploadStep('uploading');
+        const blob = await fetch(image.webPath).then((r) => r.blob());
+        const fileObj = new File([blob], `camera-scan-${Date.now()}.jpg`, {
+          type: 'image/jpeg',
+        });
+        setFile(fileObj);
+        setTitle(`Camera Scan - ${new Date().toLocaleDateString()}`);
+        setUploadStep('idle');
+        setShowUpload(true);
+        toast.success('Document captured successfully!');
+      }
+    } catch (err: any) {
+      console.error('Camera capture error:', err);
+      if (err.message && !err.message.includes('cancelled')) {
+        toast.error('Failed to capture photo');
+      }
+    }
+  };
 
   // Fetch syllabi list
   const fetchSyllabi = async () => {
@@ -177,14 +212,25 @@ export default function SyllabusListPage() {
           <p className="text-muted-foreground mt-1">Upload your curriculum PDF or photo to build structured AI study plans.</p>
         </div>
         {!showUpload && (
-          <button
-            onClick={() => setShowUpload(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-white cursor-pointer active-press hover:shadow-lg transition-all duration-300"
-            style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
-          >
-            <Plus className="w-5 h-5" />
-            <span>Upload Syllabus</span>
-          </button>
+          <div className="flex gap-2.5 shrink-0">
+            {isNative && (
+              <button
+                onClick={handleCameraScan}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold border border-border bg-card text-foreground hover:bg-muted cursor-pointer active-press transition-all duration-300 shadow-sm"
+              >
+                <ImageIcon className="w-5 h-5 text-primary" />
+                <span>Camera Scan</span>
+              </button>
+            )}
+            <button
+              onClick={() => setShowUpload(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-white cursor-pointer active-press hover:shadow-lg transition-all duration-300"
+              style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
+            >
+              <Plus className="w-5 h-5" />
+              <span>Upload Syllabus</span>
+            </button>
+          </div>
         )}
       </div>
 

@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { Upload, FileAudio, FileText, X, CheckCircle, Loader2 } from 'lucide-react';
+import { Upload, FileAudio, FileText, X, CheckCircle, Loader2, Image as ImageIcon } from 'lucide-react';
 import AdBanner from '@/components/layout/AdBanner';
 
 type Step = 'idle' | 'uploading' | 'transcribing' | 'generating' | 'embedding' | 'done';
@@ -55,12 +55,14 @@ export default function UploadPage() {
   const [segmentProgress, setSegmentProgress] = useState(0);
   const [customApiKey, setCustomApiKey] = useState('');
   const [showApiSettings, setShowApiSettings] = useState(false);
+  const [isNative, setIsNative] = useState(false);
 
   useEffect(() => {
     const savedKey = localStorage.getItem('user_groq_api_key');
     if (savedKey) {
       setCustomApiKey(savedKey);
     }
+    setIsNative(typeof window !== 'undefined' && !!(window as any).Capacitor);
   }, []);
 
   const handleSaveApiKey = (key: string) => {
@@ -104,6 +106,36 @@ export default function UploadPage() {
     return segments;
   };
 
+  const handleCameraScan = async () => {
+    try {
+      const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera,
+      });
+
+      if (image && image.webPath) {
+        setStep('uploading');
+        const blob = await fetch(image.webPath).then((r) => r.blob());
+        const fileObj = new File([blob], `camera-scan-${Date.now()}.jpg`, {
+          type: 'image/jpeg',
+        });
+        setFile(fileObj);
+        setTitle(`Camera Note - ${new Date().toLocaleDateString()}`);
+        setStep('idle');
+        toast.success('Document captured successfully!');
+      }
+    } catch (err: any) {
+      console.error('Camera capture error:', err);
+      setStep('idle');
+      if (err.message && !err.message.includes('cancelled')) {
+        toast.error('Failed to capture photo');
+      }
+    }
+  };
+
   const onDrop = useCallback((accepted: File[]) => {
     if (accepted[0]) {
       setFile(accepted[0]);
@@ -116,6 +148,7 @@ export default function UploadPage() {
     accept: {
       'audio/*': ['.mp3', '.wav', '.m4a', '.webm', '.ogg'],
       'application/pdf': ['.pdf'],
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
     },
     maxSize: 25 * 1024 * 1024,
     maxFiles: 1,
@@ -535,6 +568,8 @@ export default function UploadPage() {
               <div className="flex flex-col items-center gap-3 animate-scale-in">
                 {file.type.startsWith('audio') ? (
                   <FileAudio className="w-12 h-12 animate-pulse-soft" style={{ color: 'hsl(var(--success))' }} />
+                ) : file.type.startsWith('image') ? (
+                  <ImageIcon className="w-12 h-12 animate-pulse-soft" style={{ color: 'hsl(var(--success))' }} />
                 ) : (
                   <FileText className="w-12 h-12 animate-pulse-soft" style={{ color: 'hsl(var(--success))' }} />
                 )}
@@ -562,12 +597,26 @@ export default function UploadPage() {
                     {isDragActive ? 'Drop it here!' : 'Drop your file here'}
                   </p>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Supports MP3, WAV, M4A, WebM, OGG (max 25MB) or PDF (max 10MB)
+                    Supports MP3, WAV, M4A, WebM, OGG (max 25MB), PDF, or Images (max 10MB)
                   </p>
                 </div>
-                <span className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted active-press hover:scale-105 transition-all">
-                  Browse Files
-                </span>
+                <div className="flex gap-3 justify-center">
+                  <span className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted active-press hover:scale-105 transition-all">
+                    Browse Files
+                  </span>
+                  {isNative && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCameraScan();
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-primary/30 text-primary bg-primary/5 text-sm font-semibold hover:bg-primary/10 active-press hover:scale-105 transition-all cursor-pointer"
+                    >
+                      📷 Camera Scan
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

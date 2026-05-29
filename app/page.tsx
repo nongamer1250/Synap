@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import {
   Zap,
   BookOpen,
@@ -20,14 +22,32 @@ import {
 import Logo from '@/components/layout/Logo';
 import InteractiveShowcase from '@/components/layout/InteractiveShowcase';
 import Mascot from '@/components/layout/Mascot';
+import MobileRedirect from '@/components/layout/MobileRedirect';
 
 export default async function HomePage() {
+  const headersList = await headers();
+  const userAgent = headersList.get('user-agent') || '';
+  if (userAgent.includes('SynapAndroid')) {
+    redirect('/dashboard');
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const isLoggedIn = !!user;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased overflow-x-hidden relative">
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            if (window.navigator.userAgent.indexOf('SynapAndroid') !== -1 || window.Capacitor) {
+              document.documentElement.style.display = 'none';
+              window.location.replace('/dashboard');
+            }
+          `,
+        }}
+      />
+      <MobileRedirect />
       
       {/* Ambient background glow beams clipped perfectly to avoid vertical scrolling overflow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -112,8 +132,9 @@ export default async function HomePage() {
           </div>
 
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed pt-2">
-            Upload lecture audio, syllabi PDFs, or paste YouTube links. Synap instantly generates highly detailed 
-            study notes, active-recall flashcard decks, practice quizzes, and gives you a personalized AI Tutor.
+            Synap is the ultimate <strong>AI study notes</strong> and <strong>AI flashcard generator</strong> platform. 
+            Instantly turn lecture audio, textbook PDFs, or YouTube videos into rich study guides, interactive quizzes, 
+            and active-recall decks for free.
           </p>
         </div>
 
@@ -173,89 +194,50 @@ export default async function HomePage() {
 
       </section>
 
-      {/* ── TRUSTED BY LOGO INFINITE SCROLL MARQUEE ────────── */}
-      <section className="py-12 border-y border-border/30 bg-muted/10 relative z-10 w-full overflow-hidden">
+      {/* ── TRUSTED BY LOGO SHOWCASE ────────────────────────── */}
+      <section className="py-12 border-y border-border/30 bg-muted/10 relative z-10 w-full">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
             Designed for & trusted by top students from
           </span>
-        </div>
-        
-        <div className="relative w-full h-[48px] overflow-hidden mt-6" style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
-          <div className="absolute flex animate-infinite-scroll">
-            
-            {/* Scroll item block 1 */}
-            <div className="flex gap-16 items-center px-8 min-w-max select-none">
-              <div className="flex items-center gap-3">
-                <img src="/logos/iit-delhi.png" alt="IIT Delhi Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IIT Delhi</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/iit-bombay.png" alt="IIT Bombay Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IIT Bombay</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/iit-madras.png" alt="IIT Madras Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IIT Madras</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/bits-pilani.png" alt="BITS Pilani Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">BITS Pilani</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/delhi-university.png" alt="Delhi University Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">Delhi University</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/iit-kharagpur.png" alt="IIT Kharagpur Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IIT Kharagpur</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/iisc-bangalore.png" alt="IISc Bangalore Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IISc Bangalore</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/aiims-delhi.png" alt="AIIMS Delhi Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">AIIMS Delhi</span>
-              </div>
-            </div>
-            
-            {/* Scroll item block 2 (Duplicate for loop) */}
-            <div className="flex gap-16 items-center px-8 min-w-max select-none">
-              <div className="flex items-center gap-3">
-                <img src="/logos/iit-delhi.png" alt="IIT Delhi Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IIT Delhi</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/iit-bombay.png" alt="IIT Bombay Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IIT Bombay</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/iit-madras.png" alt="IIT Madras Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IIT Madras</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/bits-pilani.png" alt="BITS Pilani Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">BITS Pilani</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/delhi-university.png" alt="Delhi University Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">Delhi University</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/iit-kharagpur.png" alt="IIT Kharagpur Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IIT Kharagpur</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/iisc-bangalore.png" alt="IISc Bangalore Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">IISc Bangalore</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="/logos/aiims-delhi.png" alt="AIIMS Delhi Logo" className="h-8 w-auto opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 animate-fade-in" />
-                <span className="text-sm font-bold text-muted-foreground/60">AIIMS Delhi</span>
-              </div>
-            </div>
+          
+          <div className="relative w-full overflow-hidden mt-10 py-4">
+            {/* High-end gradient fade-out masks on the edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background via-background/40 to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background via-background/40 to-transparent z-10 pointer-events-none" />
 
+            <div className="flex gap-20 sm:gap-28 animate-infinite-scroll py-3 whitespace-nowrap items-center">
+              {[
+                { name: 'IIT Delhi', path: '/logos/iit-delhi.png' },
+                { name: 'IIT Bombay', path: '/logos/iit-bombay.png' },
+                { name: 'IIT Madras', path: '/logos/iit-madras.png' },
+                { name: 'BITS Pilani', path: '/logos/bits-pilani.png' },
+                { name: 'Delhi University', path: '/logos/delhi-university.png' },
+                { name: 'IIT Kharagpur', path: '/logos/iit-kharagpur.png' },
+                { name: 'IISc Bangalore', path: '/logos/iisc-bangalore.png' },
+                { name: 'AIIMS Delhi', path: '/logos/aiims-delhi.png' },
+              ].concat([
+                { name: 'IIT Delhi', path: '/logos/iit-delhi.png' },
+                { name: 'IIT Bombay', path: '/logos/iit-bombay.png' },
+                { name: 'IIT Madras', path: '/logos/iit-madras.png' },
+                { name: 'BITS Pilani', path: '/logos/bits-pilani.png' },
+                { name: 'Delhi University', path: '/logos/delhi-university.png' },
+                { name: 'IIT Kharagpur', path: '/logos/iit-kharagpur.png' },
+                { name: 'IISc Bangalore', path: '/logos/iisc-bangalore.png' },
+                { name: 'AIIMS Delhi', path: '/logos/aiims-delhi.png' },
+              ]).map((logo, idx) => (
+                <div key={`${logo.name}-${idx}`} className="flex items-center gap-3.5 group transition-all duration-300 shrink-0 select-none">
+                  <img
+                    src={logo.path}
+                    alt={`${logo.name} Logo`}
+                    className="h-10 w-auto opacity-50 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105"
+                  />
+                  <span className="text-sm sm:text-base font-bold text-muted-foreground/60 group-hover:text-foreground/90 transition-colors tracking-wide">
+                    {logo.name}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -283,10 +265,10 @@ export default async function HomePage() {
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}>
                   <BookOpen className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Premium 70B Study Notes</h3>
+                <h3 className="text-xl font-bold text-foreground">Premium AI Study Notes</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed max-w-xl">
-                  Transcribe materials into dense, reason-rich study sheets made by Groq's premium 70B model. 
-                  Divided into client-coordinated segments to guarantee zero serverless timeouts!
+                  Transcribe lecture recordings into dense, concept-structured study sheets using our advanced <strong>lecture notes AI</strong>. 
+                  Get comprehensive study guides from any course material with complete semantic accuracy.
                 </p>
               </div>
               
@@ -303,9 +285,10 @@ export default async function HomePage() {
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}>
                   <MessageSquare className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">AI Chat Tutor</h3>
+                <h3 className="text-xl font-bold text-foreground">AI Tutor & Quiz Generator</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  An AI chatbot sits directly next to your study notes, letting you clarify sections, ask definitions, and explain code instantly.
+                  Test your understanding using our smart <strong>AI quiz generator</strong>. Chat with your course materials 
+                  in real-time to solve complex questions, write code, or explain hard concepts.
                 </p>
               </div>
               
@@ -320,9 +303,10 @@ export default async function HomePage() {
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}>
                   <Brain className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Autogenerated Decks</h3>
+                <h3 className="text-xl font-bold text-foreground">AI Flashcard Generator</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Reinforce spaced-repetition. Review autogenerated decks linked directly to your notes to practice vocabulary, concepts, and definitions.
+                  Convert lectures and <strong>PDF to flashcards</strong> instantly. Review interactive spaced-repetition decks 
+                  custom-tailored to target your weak spots and guarantee active recall retention.
                 </p>
               </div>
               
@@ -369,10 +353,10 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="relative glass border border-border p-8 rounded-2xl text-center space-y-4 glass-hover reveal-left">
             <div className="absolute top-4 right-6 text-3xl font-extrabold opacity-15 text-primary font-mono">01</div>
-            <h3 className="text-base font-bold">1. Upload Lecture</h3>
+            <h3 className="text-base font-bold">1. Upload Lecture Materials</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Drop an MP3 or WAV audio lecture, drag in a textbook PDF, or paste any YouTube video link. 
-              Synap extracts the transcript and compiles metadata.
+              Drag in slides, utilize <strong>YouTube to notes</strong> conversion, or upload lecture audio. 
+              Synap's AI automatically parses, transcribes, and structures the source material.
             </p>
           </div>
 

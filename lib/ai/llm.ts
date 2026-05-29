@@ -31,6 +31,9 @@ export async function complete(
   if (options.apiKey || process.env.GROQ_API_KEY) {
     return completeWithGroq(messages, options);
   }
+  if (process.env.VERCEL) {
+    throw new Error('Groq API Key is missing on the server. Please enter your custom key in Settings.');
+  }
   return completeWithOllama(messages, options);
 }
 
@@ -41,6 +44,9 @@ export async function stream(
 ): Promise<ReadableStream<Uint8Array>> {
   if (options.apiKey || process.env.GROQ_API_KEY) {
     return streamWithGroq(messages, options);
+  }
+  if (process.env.VERCEL) {
+    throw new Error('Groq API Key is missing on the server. Please enter your custom key in Settings.');
   }
   return streamWithOllama(messages, options);
 }

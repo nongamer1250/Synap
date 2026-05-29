@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Synap</string>
+    <string name="title_activity_main">Synap</string>
+    <string name="package_name">bond.synap.app</string>
+    <string name="custom_url_scheme">bond.synap.app</string>
+</resources>

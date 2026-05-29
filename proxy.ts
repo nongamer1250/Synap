@@ -7,6 +7,16 @@ import { NextResponse, type NextRequest } from 'next/server';
  * Redirects authenticated users away from /login and /register.
  */
 export async function proxy(request: NextRequest) {
+  const userAgent = request.headers.get('user-agent') || '';
+  const { pathname } = request.nextUrl;
+
+  // If request is from SynapAndroid app and is accessing '/', redirect to '/dashboard' immediately
+  if (pathname === '/' && userAgent.includes('SynapAndroid')) {
+    const dashUrl = request.nextUrl.clone();
+    dashUrl.pathname = '/dashboard';
+    return NextResponse.redirect(dashUrl);
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -31,7 +41,6 @@ export async function proxy(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  const { pathname } = request.nextUrl;
 
   // Protect dashboard routes
   if (!user && pathname.startsWith('/dashboard')) {
