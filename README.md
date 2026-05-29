@@ -1,50 +1,74 @@
-# Synap ⚡
+# Synap™ ⚡
 
-> A free, open-source AI study assistant. Upload lecture audio or PDFs → get transcriptions, study notes, flashcards, quizzes, and an AI tutor powered by RAG.
+> Synap is a modern, gamified **Exam Preparation & Semester Workspace Platform**. Instantly turn textbooks, slides, PDF files, lecture audio, or YouTube links into structured study notes, active spaced-repetition flashcards, interactive quizzes, and custom predicted mock exam sheets. Fully optimized for responsive browsers and native Android/iOS mobile devices.
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Supabase](https://img.shields.io/badge/Supabase-free-green) ![Groq](https://img.shields.io/badge/Groq-free-orange)
+![Next.js](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Supabase](https://img.shields.io/badge/Supabase-free-green) ![Groq](https://img.shields.io/badge/Groq-free-orange) ![Capacitor](https://img.shields.io/badge/Capacitor-Mobile-purple)
 
 ---
 
 ## ✨ Features
 
-| Feature | Status |
-|---|---|
-| 🎙️ Audio Upload & Transcription (Whisper) | ✅ |
-| 📝 AI Study Notes (markdown, headings, bullets) | ✅ |
-| 🃏 Flashcards with 3D flip animation | ✅ |
-| 📊 MCQ + Short Answer Quizzes | ✅ |
-| 🤖 AI Chat with RAG (answers from your notes) | ✅ |
-| 📄 PDF Upload | ✅ |
-| 🔒 Authentication (email + Google OAuth) | ✅ |
-| 📱 Mobile Responsive | ✅ |
-| 🌙 Dark Mode | ✅ |
-| 📦 Vector embeddings for semantic search | ✅ |
+### 🎓 Semester Workspace & Moats
+* **Collapsible Folders:** Group study materials, quizzes, and flashcards dynamically by their university subject or curriculum syllabus course name.
+* **Mastery Dashboard:** View subject-by-subject completion bars, weekly study hour metrics, and active recall stats on a single dashboard screen.
+* **Exam Readiness Score:** An algorithmic radial progress tracker that estimates your readiness percentage based on quiz grades, spaced recall consistency, and completed topics.
+
+### 🧠 Advanced AI Exam Prep Engine
+* **AI Exam Predictor:** Map your curriculum topics and call high-yield Llama models to forecast the top 10 most likely exam questions, complete with academic model answer keys.
+* **Cognitive Recall Calendar:** A visual interval check-off checklist based on 1-3-7-14 day spaced repetition recall triggers to maximize neural retention.
+* **Hyper-Condensed Cheat Sheets:** Draft single-page revision lists summarizing the top 20 facts, formulas, rules, and glossary terms.
+* **Practice Paper Generator:** Instantly generate complete end-of-semester mock papers in standard university formatting, printable with toggleable answer sheets.
+
+### 📷 Textbook Camera OCR & Audio transcription
+* **Camera Scan:** Capture photos of textbook pages, whiteboard sketches, or notebook pages directly inside the app to trigger OCR visual transcription.
+* **Audio Transcription:** Record lectures or import MP3/WAV files for transcription without serverless loading timeouts using client-side segmentation.
+* **YouTube to Notes:** Paste public video links to fetch subtitle transcripts and convert video tutorials into active study sets.
+
+### 📱 Premium Native Mobile Features (Capacitor)
+* **Bottom Navigation:** Elegant responsive glassmorphic tab bars tailored for phones.
+* **OAuth Deep Linking:** Direct Google OAuth callback redirects (`bond.synap.app://auth/callback`) back into the native app.
+* **IndexedDB Cache:** Offline support to flip flashcards and study notes on the go.
+* **Pull-to-Refresh Gestures:** Smooth circular pull indicators with smart scroll-top protection.
+* **Local Reminders:** Automated Android daily notifications scheduled at 6:00 PM to keep study streaks alive.
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- Supabase account (free)
-- Groq account (free) 
-- HuggingFace account (free)
+- Node.js 18 or 20+
+- Supabase Account (Free)
+- Groq Console API Key (Free)
+- Hugging Face Account Access Token (Free)
 
-### 1. Clone & Install
+### 1. Installation
 
 ```bash
-cd turbolearn  # (the project folder name stays the same)
+git clone https://github.com/nongamer1250/Synap.git
+cd Synap/turbolearn
 npm install
 cp .env.local.example .env.local
 ```
 
-### 2. Set up Supabase
+### 2. Configure Environment variables
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** and run the entire contents of `supabase/schema.sql`
-3. Go to **Storage** → create a bucket named `uploads` (set to **private**)
-4. Add these storage policies in the SQL editor:
+Update `.env.local` with your platform credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+GROQ_API_KEY=gsk_your-groq-key
+HUGGINGFACE_API_KEY=hf_your-hf-token
+```
+
+### 3. Database Schema Setup
+
+1. Open your **Supabase Dashboard → SQL Editor**.
+2. Copy and run the entire contents of `supabase/schema.sql`.
+3. In **Storage**, create a private bucket named `uploads`.
+4. Apply these private storage security policies:
+
 ```sql
 CREATE POLICY "Users upload own files" ON storage.objects FOR INSERT
   WITH CHECK (auth.uid()::text = (storage.foldername(name))[1]);
@@ -53,36 +77,8 @@ CREATE POLICY "Users view own files" ON storage.objects FOR SELECT
 CREATE POLICY "Users delete own files" ON storage.objects FOR DELETE
   USING (auth.uid()::text = (storage.foldername(name))[1]);
 ```
-5. Copy your **Project URL**, **anon key**, and **service_role key** from Settings → API
 
-### 3. Set up Groq (free)
-
-1. Sign up at [console.groq.com](https://console.groq.com) (free). Copy your API key.
-
-### 4. Set up HuggingFace (free)
-
-1. Sign up at [huggingface.co](https://huggingface.co)
-2. Go to Settings → Access Tokens → New token (read permissions)
-3. Used for `sentence-transformers/all-MiniLM-L6-v2` embeddings
-
-### 5. Configure Environment
-
-Edit `.env.local`:
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-GROQ_API_KEY=gsk_your-groq-key
-HUGGINGFACE_API_KEY=hf_your-hf-token
-```
-
-### 6. Enable Google OAuth (optional)
-
-1. In Supabase: Authentication → Providers → Google → Enable
-2. Add your Google OAuth credentials
-3. Set redirect URL: `https://your-project.supabase.co/auth/v1/callback`
-
-### 7. Run
+### 4. Running Locally
 
 ```bash
 npm run dev
@@ -94,107 +90,57 @@ npm run dev
 ## 🏗️ Architecture
 
 ```
-Audio/PDF Upload
+Materials (Audio, PDF, Camera Photos, YouTube Links)
       │
       ▼
-Supabase Storage
+Supabase Private Storage
       │
       ▼
-Groq Whisper API ──► Transcript
+Groq Whisper / Llama Vision OCR ──► Text Extraction
       │
       ▼
-Groq LLaMA 3.3 70B ──► Study Notes (markdown)
+Parallel Chunking & Chunker ──► HuggingFace sentence-transformers
       │
-      ├──► Flashcards (JSON Q&A pairs)
+      ├──► Supabase pgvector (Embedding Retrieval)
       │
-      ├──► Quiz (MCQ + Short Answer)
+      ├──► AI Study Guide Compilers
       │
-      └──► Chunker + HuggingFace Embeddings
-                 │
-                 ▼
-           Supabase pgvector
-                 │
-                 ▼
-           RAG Chat Pipeline
-                 │
-                 ▼
-           Groq LLaMA (streaming)
+      └──► Exam Prep Workspace (Forecasts, Cheat Sheets, Calendar)
 ```
-
-### RAG Pipeline Details
-
-- **Chunking**: ~400 words per chunk, 64-word overlap (sentence-aware)
-- **Embeddings**: `sentence-transformers/all-MiniLM-L6-v2` → 384 dimensions
-- **Retrieval**: Top-5 cosine similarity via Supabase `pgvector`
-- **Hallucination reduction**: Strict system prompt, low temperature (0.3), source citations
 
 ---
 
-## 📁 Project Structure
+## 📱 Mobile App Compilation (Capacitor)
 
+Compile local release debug binaries for Android:
+
+```bash
+# Compile and build Next.js static files
+npm run build
+
+# Copy assets to Cap Android folders
+npx cap sync
+
+# Launch Android Studio to assemble or run APK
+npx cap open android
 ```
-synap/
-├── app/
-│   ├── api/
-│   │   ├── upload/         # File upload to Supabase Storage
-│   │   ├── transcribe/     # Groq Whisper transcription
-│   │   ├── notes/          # AI note generation + CRUD
-│   │   ├── flashcards/     # Flashcard generation + CRUD
-│   │   ├── quiz/           # Quiz generation + CRUD
-│   │   ├── chat/           # Streaming RAG chat
-│   │   └── embed/          # Chunking + embedding pipeline
-│   ├── dashboard/          # Protected app pages
-│   ├── login/              # Auth pages
-│   └── register/
-├── components/
-│   ├── layout/             # Sidebar, Header
-│   └── notes/              # Note display components
-├── lib/
-│   ├── ai/                 # LLM, Whisper, RAG, Chunker, Embed
-│   └── supabase/           # Client/server Supabase clients
-├── types/                  # TypeScript interfaces
-└── supabase/
-    └── schema.sql          # Full database schema
-```
+
+Ensure `bond.synap.app://auth/callback` is registered under approved redirect URLs in your Supabase Auth settings to enable native deep-linking auth flows.
 
 ---
 
 ## 🚢 Deploy to Vercel
 
+Deploys seamlessly inside edge serverless runtimes:
+
 ```bash
 npx vercel --prod
 ```
 
-Add all environment variables in the Vercel dashboard under **Settings → Environment Variables**.
-
-> **Note**: The Groq API handles AI processing in the cloud, so no GPU needed on Vercel.
-
----
-
-## 💰 Cost Breakdown (Free Tier)
-
-| Service | Free Limit |
-|---|---|
-| Vercel | 100GB bandwidth, unlimited deployments |
-| Supabase | 500MB DB, 1GB storage, 2GB bandwidth |
-| Groq | 14,400 req/day (Whisper + LLaMA) |
-| HuggingFace | 1,000 req/month free inference |
-
-**Total monthly cost: $0** for typical student usage.
-
----
-
-## 🗺️ Roadmap
-
-- [ ] PDF text extraction (pdf-parse)
-- [ ] Spaced repetition (SM-2 algorithm)  
-- [ ] Export notes as PDF
-- [ ] Share notes with classmates
-- [ ] Mobile app (Capacitor)
-- [ ] Browser extension for YouTube lectures
+Configure all environment variables inside your Vercel Dashboard under **Settings → Environment Variables**.
 
 ---
 
 ## 📝 License
 
-MIT — free to use, modify, and deploy.
+MIT — Free to use, modify, study, and deploy.
