@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { createClient } from '@/lib/supabase/client';
+import { Sparkles, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,7 +19,6 @@ export default function LoginPage() {
     const error = params.get('error');
     if (error) {
       toast.error(decodeURIComponent(error));
-      // Clean query parameters from browser address bar
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
@@ -50,35 +50,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative">
-      {/* Background orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, hsl(255 85% 68%), transparent)' }} />
-      </div>
-
-      <div className="w-full max-w-md animate-fade-in">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
+    <div className="min-h-screen bg-[#09070f] text-foreground flex items-center justify-center px-4 relative overflow-hidden before:content-[''] before:absolute before:left-1/2 before:-bottom-[20%] before:-translate-x-1/2 before:w-[80%] before:h-[40%] before:bg-gradient-beam-bottom before:pointer-events-none after:content-[''] after:absolute after:left-1/2 after:-top-[10%] after:-translate-x-1/2 after:w-[90%] after:h-[60%] after:bg-gradient-beam-top before:blur-[100px] after:blur-[120px] after:pointer-events-none">
+      
+      <div className="w-full max-w-md animate-fade-in relative z-10 space-y-6">
+        
+        {/* Logo Header */}
+        <div className="text-center">
+          <Link href="/" className="inline-flex items-center gap-2 mb-4 hover:scale-[1.02] active-press transition">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shadow-lg shadow-primary/20"
               style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}>
               ⚡
             </div>
-            <span className="font-bold text-lg gradient-text">Synap</span>
+            <span className="font-bold text-xl tracking-tight gradient-text">Synap</span>
           </Link>
-          <h1 className="text-2xl font-bold">Welcome back</h1>
-          <p className="text-muted-foreground mt-1">Sign in to continue studying</p>
+          <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+          <p className="text-xs text-muted-foreground mt-1.5">Sign in to continue studying</p>
         </div>
 
-        {/* Card */}
-        <div className="glass rounded-2xl p-8 border border-border">
-          {/* Google OAuth */}
+        {/* Clean Center Card */}
+        <div className="glass border border-border/80 rounded-2xl p-8 shadow-2xl relative">
+          
+          {/* Google OAuth Button */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-border bg-muted hover:bg-secondary transition-colors mb-6 font-medium"
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-border bg-muted/60 hover:bg-secondary/80 transition-all font-medium text-sm active-press cursor-pointer"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -87,18 +84,20 @@ export default function LoginPage() {
             Continue with Google
           </button>
 
-          <div className="relative mb-6">
+          {/* Separator */}
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
+              <div className="w-full border-t border-border/60" />
             </div>
-            <div className="relative flex justify-center text-xs text-muted-foreground">
-              <span className="bg-card px-2">or continue with email</span>
+            <div className="relative flex justify-center text-[10px] uppercase tracking-wider text-muted-foreground">
+              <span className="bg-[#120f1b] px-3 font-semibold">or continue with email</span>
             </div>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1.5">Email</label>
+              <label htmlFor="email" className="block text-xs font-semibold tracking-wide text-muted-foreground uppercase mb-1.5 pl-0.5">Email</label>
               <input
                 id="email"
                 type="email"
@@ -106,12 +105,12 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="you@example.com"
-                className="w-full px-4 py-2.5 rounded-xl bg-muted border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors placeholder-muted-foreground"
+                className="w-full px-4 py-3 rounded-xl bg-muted border border-border focus-ring-glow transition-all text-xs placeholder-muted-foreground/60"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-1.5">Password</label>
+              <label htmlFor="password" className="block text-xs font-semibold tracking-wide text-muted-foreground uppercase mb-1.5 pl-0.5">Password</label>
               <input
                 id="password"
                 type="password"
@@ -119,7 +118,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 rounded-xl bg-muted border border-border focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors placeholder-muted-foreground"
+                className="w-full px-4 py-3 rounded-xl bg-muted border border-border focus-ring-glow transition-all text-xs placeholder-muted-foreground/60"
               />
             </div>
 
@@ -127,23 +126,24 @@ export default function LoginPage() {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed glow-on-hover"
+              className="w-full py-3.5 rounded-xl font-bold text-white text-xs tracking-wider uppercase transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed glow-on-hover active-press cursor-pointer flex items-center justify-center gap-2"
               style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
             >
               {loading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
+          {/* Account redirect */}
+          <p className="text-center text-xs text-muted-foreground mt-6 font-medium">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-primary hover:underline font-medium">
+            <Link href="/register" className="text-primary hover:underline font-bold ml-0.5">
               Sign up free
             </Link>
           </p>
         </div>
 
         {/* Footer compliance links */}
-        <div className="text-center text-xs text-muted-foreground/60 mt-8 space-x-3">
+        <div className="text-center text-[10px] uppercase tracking-wider text-muted-foreground/50 space-x-3">
           <Link href="/privacy" className="hover:text-foreground transition-colors hover:underline">
             Privacy Policy
           </Link>

@@ -492,5 +492,58 @@ html.lenis body {
   transform: scale(1);
 }
 
+/* ============================================================
+   Synap Redesign — Custom Beams & Marquee Animations
+   ============================================================ */
+
+@keyframes infinite-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  width: max-content;
+  animation: infinite-scroll 38s linear infinite;
+  will-change: transform;
+}
+
+@keyframes mascot-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  50% { transform: translateY(-8px) rotate(1.5deg) scale(1.04); }
+}
+
+.animate-mascot-float {
+  animation: mascot-float 3.5s ease-in-out infinite;
+  display: inline-block;
+  transform-origin: bottom center;
+}
+
+@keyframes neon-pulse {
+  0%, 100% {
+    border-color: rgba(167, 139, 250, 0.25);
+    box-shadow: 0 0 16px -4px rgba(167, 139, 250, 0.08);
+  }
+  50% {
+    border-color: rgba(167, 139, 250, 0.7);
+    box-shadow: 0 0 28px -2px rgba(167, 139, 250, 0.28);
+  }
+}
+
+.neon-border-pulse {
+  animation: neon-pulse 3.8s ease-in-out infinite;
+}
+
+.bg-gradient-beam-top {
+  background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, transparent 68%);
+  filter: blur(90px);
+}
+
+.bg-gradient-beam-bottom {
+  background: radial-gradient(ellipse at center, rgba(236, 72, 153, 0.07) 0%, transparent 72%);
+  filter: blur(100px);
+}
+
+
 
 

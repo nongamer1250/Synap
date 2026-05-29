@@ -10,6 +10,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login');
   }
 
+  // Enforce completing onboarding questionnaire
+  if (user.user_metadata?.onboarding_completed !== true) {
+    redirect('/onboarding');
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')

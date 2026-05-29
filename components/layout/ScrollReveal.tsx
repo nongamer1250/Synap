@@ -13,9 +13,7 @@ export default function ScrollReveal() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('revealed');
-          } else {
-            // Multi-trigger: Reset animation state when leaving the viewport!
-            entry.target.classList.remove('revealed');
+            observer.unobserve(entry.target); // Reveal once and stop observing for maximum scroll performance
           }
         });
       },

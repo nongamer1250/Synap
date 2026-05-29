@@ -11,22 +11,62 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.synap.bond'),
   title: {
     default: 'Synap — AI Study Assistant',
     template: '%s | Synap',
   },
   description:
     'Upload lecture audio or PDFs and get instant AI-generated study notes, flashcards, quizzes, and an AI tutor — for free.',
-  keywords: ['AI study assistant', 'lecture notes', 'flashcards', 'quiz generator', 'transcription'],
+  keywords: ['AI study assistant', 'lecture notes', 'flashcards', 'quiz generator', 'transcription', 'active recall'],
   manifest: '/manifest.json',
+  alternates: {
+    canonical: '/',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icon.svg', type: 'image/svg+xml' }
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+    ]
+  },
   openGraph: {
-    title: 'Synap',
+    title: 'Synap — AI Study Assistant',
     description: 'Your AI-powered study companion',
     type: 'website',
+    url: 'https://www.synap.bond',
+    siteName: 'Synap',
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    'name': 'Synap',
+    'alternateName': ['Synap AI', 'Synap Study Assistant'],
+    'url': 'https://www.synap.bond',
+    'description': 'Upload lecture audio or PDFs and get instant AI-generated study notes, flashcards, quizzes, and an AI tutor.',
+  };
+
+  const softwareSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    'name': 'Synap',
+    'applicationCategory': 'EducationalApplication',
+    'operatingSystem': 'All',
+    'url': 'https://www.synap.bond',
+    'description': 'AI-powered study assistant for generating notes, flashcards, and quizzes from course materials.',
+    'offers': {
+      '@type': 'Offer',
+      'price': '0',
+      'priceCurrency': 'USD',
+    },
+  };
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
@@ -34,6 +74,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5143493824024577"
           crossOrigin="anonymous"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
