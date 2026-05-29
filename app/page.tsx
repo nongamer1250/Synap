@@ -141,13 +141,22 @@ export default async function HomePage() {
         {/* Call to Actions */}
         <div data-nosnippet className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           {isLoggedIn ? (
-            <Link
-              href="/dashboard"
-              className="px-8 py-4 rounded-xl font-bold text-white text-sm transition-all duration-200 glow-on-hover flex items-center justify-center gap-2 cursor-pointer active-press"
-              style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
-            >
-              Go to Dashboard <ArrowRight className="w-4 h-4" />
-            </Link>
+            <>
+              <Link
+                href="/dashboard"
+                className="px-8 py-4 rounded-xl font-bold text-white text-sm transition-all duration-200 glow-on-hover flex items-center justify-center gap-2 cursor-pointer active-press"
+                style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
+              >
+                Go to Dashboard <ArrowRight className="w-4 h-4" />
+              </Link>
+              <a
+                href="/synap-study.apk"
+                download="synap-study.apk"
+                className="px-8 py-4 rounded-xl font-bold border border-border text-foreground hover:bg-muted text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active-press"
+              >
+                📱 Download Android App
+              </a>
+            </>
           ) : (
             <>
               <Link
@@ -163,6 +172,13 @@ export default async function HomePage() {
               >
                 Sign In
               </Link>
+              <a
+                href="/synap-study.apk"
+                download="synap-study.apk"
+                className="px-8 py-4 rounded-xl font-bold border border-border text-foreground hover:bg-muted text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active-press"
+              >
+                📱 Download Android App
+              </a>
             </>
           )}
         </div>
