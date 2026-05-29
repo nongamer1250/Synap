@@ -55,7 +55,7 @@ export default function InteractiveShowcase() {
             <span className="w-3 h-3 rounded-full bg-destructive/80" />
             <span className="w-3 h-3 rounded-full bg-warning/80" />
             <span className="w-3 h-3 rounded-full bg-success/80" />
-            <span className="text-xs text-muted-foreground ml-2 font-mono">SynapStudio_Sandbox.ts</span>
+            <span className="text-xs text-muted-foreground ml-2 font-mono">study-engine.ts</span>
           </div>
           
           {step !== 'idle' && (

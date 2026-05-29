@@ -106,14 +106,14 @@ export default async function HomePage() {
             <Mascot />
 
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-none">
-              Meet <span className="gradient-text animate-pulse-soft">Synap</span>. <br />
-              Study with AI Notes.
+              Turn Any Lecture Into <br />
+              <span className="gradient-text animate-pulse-soft">Exam-Ready Notes</span> in Minutes.
             </h1>
           </div>
 
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed pt-2">
             Upload lecture audio, syllabi PDFs, or paste YouTube links. Synap instantly generates highly detailed 
-            study notes, flashcard decks, interactive quizzes, and gives you a personalized AI Tutor.
+            study notes, active-recall flashcard decks, practice quizzes, and gives you a personalized AI Tutor.
           </p>
         </div>
 
