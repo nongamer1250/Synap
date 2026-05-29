@@ -1,4 +1,4 @@
-const HF_API_KEY = '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';
+const HF_API_KEY = process.env.HF_API_KEY || 'your_hf_api_key_placeholder';
 const HF_MODEL = 'sentence-transformers/all-MiniLM-L6-v2';
 
 async function test() {
