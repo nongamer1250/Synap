@@ -56,7 +56,9 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
     }
 
     setLoadingChange(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(userEmail);
+    const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+    });
 
     if (error) {
       toast.error(error.message);

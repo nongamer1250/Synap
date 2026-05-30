@@ -29,5 +29,6 @@ export async function GET(request: Request) {
     console.warn('[OAuth Callback] No authorization code found in callback URL.');
   }
 
-  return NextResponse.redirect(new URL('/dashboard', appUrl));
+  const next = requestUrl.searchParams.get('next') || '/dashboard';
+  return NextResponse.redirect(new URL(next, appUrl));
 }
