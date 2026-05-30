@@ -62,8 +62,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (step === 4) {
       const timer = setTimeout(() => {
-        router.push('/dashboard');
-        router.refresh();
+        window.location.href = '/dashboard';
       }, 1800);
       return () => clearTimeout(timer);
     }
