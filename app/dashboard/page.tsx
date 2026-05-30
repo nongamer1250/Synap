@@ -134,9 +134,13 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-xs text-muted-foreground mt-0.5 font-medium">Create new notes and monitor your study goals</p>
           </div>
-          {streak > 0 && (
+          {streak > 0 ? (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-xs font-bold animate-pulse-soft">
               🔥 <span className="font-mono">{streak}</span> Day Streak
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border/60 text-muted-foreground text-xs font-medium">
+              🔥 <span className="font-mono">0</span> Day Streak
             </div>
           )}
         </div>
@@ -311,18 +315,24 @@ export default async function DashboardPage() {
           <div className="glass rounded-3xl border border-border/60 bg-card p-5 space-y-3.5 shadow-md hover:border-primary/30 transition-all flex flex-col justify-between">
             <div>
               <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block mb-3">Performance Log</span>
-              <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="grid grid-cols-2 gap-2 text-center">
                 <div className="bg-muted/30 border border-border/40 p-2.5 rounded-xl">
-                  <span className="block text-xs font-bold text-foreground">{notesCount}</span>
+                  <span className="block text-xs font-bold text-foreground font-mono">{notesCount}</span>
                   <span className="text-[9px] text-muted-foreground">Study Notes</span>
                 </div>
                 <div className="bg-muted/30 border border-border/40 p-2.5 rounded-xl">
-                  <span className="block text-xs font-bold text-foreground">{flashcardsCount}</span>
+                  <span className="block text-xs font-bold text-foreground font-mono">{flashcardsCount}</span>
                   <span className="text-[9px] text-muted-foreground">Flashcards</span>
                 </div>
                 <div className="bg-muted/30 border border-border/40 p-2.5 rounded-xl">
-                  <span className="block text-xs font-bold text-foreground">{quizAttemptsCount}</span>
+                  <span className="block text-xs font-bold text-foreground font-mono">{quizAttemptsCount}</span>
                   <span className="text-[9px] text-muted-foreground">Quizzes</span>
+                </div>
+                <div className="bg-muted/30 border border-border/40 p-2.5 rounded-xl flex flex-col justify-center items-center">
+                  <span className={`block text-xs font-mono font-bold ${streak > 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>
+                    🔥 {streak}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">Study Streak</span>
                 </div>
               </div>
             </div>
