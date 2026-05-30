@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, Loader2, Zap, RotateCcw } from 'lucide-react';
 import type { Note, Quiz, QuizQuestion } from '@/types';
 
 import { useDashboardCache } from '@/components/providers/DashboardCacheProvider';
+import { createClient } from '@/lib/supabase/client';
 
 type Phase = 'setup' | 'quiz' | 'results';
 
@@ -65,7 +66,7 @@ export default function QuizPage() {
     setGenerating(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!quiz) return;
     let correct = 0;
     quiz.questions.forEach((q: QuizQuestion) => {
@@ -75,6 +76,22 @@ export default function QuizPage() {
     });
     setScore(correct);
     setPhase('results');
+
+    // Save the quiz attempt to database
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('quiz_attempts').insert({
+          quiz_id: quiz.id,
+          user_id: user.id,
+          score: correct,
+          answers: answers
+        });
+      }
+    } catch (dbErr) {
+      console.error('Failed to save quiz attempt:', dbErr);
+    }
   };
 
   const resetQuiz = () => {

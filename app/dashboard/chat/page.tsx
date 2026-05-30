@@ -98,6 +98,7 @@ export default function ChatPage() {
     setMessages(m => [...m, assistantMsg]);
 
     try {
+      localStorage.setItem('synap_has_chatted', 'true');
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
