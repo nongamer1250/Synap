@@ -3,10 +3,15 @@ import { createClient } from '@/lib/supabase/server';
 import { buildRAGContext } from '@/lib/ai/rag';
 import { stream } from '@/lib/ai/llm';
 import type { LLMMessage } from '@/lib/ai/llm';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
+import { z } from 'zod';
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  const startTime = Date.now();
+  let user_id: string | undefined = undefined;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -14,12 +19,50 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    user_id = user.id;
 
-    const { session_id, message, note_id } = await request.json();
-
-    if (!session_id || !message?.trim()) {
-      return NextResponse.json({ error: 'session_id and message are required' }, { status: 400 });
+    // 1. Rate Limiting Check (20 requests / min)
+    const ip = getClientIp(request);
+    const limiter = await rateLimit(`chat:${ip}`, 20, 60);
+    
+    if (!limiter.success) {
+      logger.warn('Chat rate limit breached', { userId: user.id, route: '/api/chat', metadata: { ip } });
+      return NextResponse.json(
+        { error: 'Too many chat requests. Please wait a minute.' },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': String(limiter.limit),
+            'X-RateLimit-Remaining': String(limiter.remaining),
+            'X-RateLimit-Reset': String(limiter.reset),
+          }
+        }
+      );
     }
+
+    // 2. Request Schema Zod Validation
+    const schema = z.object({
+      session_id: z.string().uuid(),
+      message: z.string().min(1).max(5000),
+      note_id: z.string().uuid().nullable().optional(),
+    });
+
+    const body = await request.clone().json().catch(() => ({}));
+    const validated = schema.safeParse(body);
+
+    if (!validated.success) {
+      logger.warn('Chat request payload validation failed', {
+        userId: user.id,
+        route: '/api/chat',
+        metadata: { errors: validated.error.errors },
+      });
+      return NextResponse.json(
+        { error: 'Invalid request payload', details: validated.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const { session_id, message, note_id } = validated.data;
 
     // Verify session belongs to user
     const { data: session } = await supabase
@@ -105,8 +148,12 @@ export async function POST(request: Request) {
         'Connection': 'keep-alive',
       },
     });
-  } catch (error) {
-    console.error('Chat error:', error);
+  } catch (error: any) {
+    logger.error('Chat session handler failed', error, {
+      userId: user_id,
+      route: '/api/chat',
+      latencyMs: Date.now() - startTime,
+    });
     return NextResponse.json({ error: 'Chat failed' }, { status: 500 });
   }
 }

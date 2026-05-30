@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { complete } from '@/lib/ai/llm';
+import { logger } from '@/lib/logger';
+import { z } from 'zod';
 
 export const maxDuration = 30;
 
@@ -37,7 +39,15 @@ OUTPUT FORMAT (JSON):
   ]
 }`;
 
+const quizPostSchema = z.object({
+  note_id: z.string().uuid(),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional().default('medium'),
+  count: z.number().int().min(1).max(20).optional().default(8),
+});
+
 export async function POST(request: Request) {
+  const startTime = Date.now();
+  let user_id: string | null = null;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -45,12 +55,25 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    user_id = user.id;
 
-    const { note_id, difficulty = 'medium', count = 8 } = await request.json();
+    // Request Schema Zod Validation
+    const rawBody = await request.clone().json().catch(() => ({}));
+    const validated = quizPostSchema.safeParse(rawBody);
 
-    if (!note_id) {
-      return NextResponse.json({ error: 'note_id is required' }, { status: 400 });
+    if (!validated.success) {
+      logger.warn('Quiz request payload validation failed', {
+        userId: user.id,
+        route: '/api/quiz',
+        metadata: { errors: validated.error.errors },
+      });
+      return NextResponse.json(
+        { error: 'Invalid request payload', details: validated.error.errors },
+        { status: 400 }
+      );
     }
+
+    const { note_id, difficulty, count } = validated.data;
 
     const { data: note, error: noteError } = await supabase
       .from('notes')
@@ -99,13 +122,19 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ data: quiz });
-  } catch (error) {
-    console.error('Quiz generation error:', error);
+  } catch (error: any) {
+    logger.error('Quiz generation process failed', error, {
+      userId: user_id || undefined,
+      route: '/api/quiz',
+      latencyMs: Date.now() - startTime,
+    });
     return NextResponse.json({ error: 'Failed to generate quiz' }, { status: 500 });
   }
 }
 
 export async function GET(request: Request) {
+  const startTime = Date.now();
+  let user_id: string | null = null;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -113,6 +142,7 @@ export async function GET(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    user_id = user.id;
 
     const { searchParams } = new URL(request.url);
     const noteId = searchParams.get('note_id');
@@ -130,12 +160,21 @@ export async function GET(request: Request) {
     const { data: quizzes, error } = await query;
 
     if (error) {
+      logger.error('Quizzes database query failed', error, {
+        userId: user.id,
+        route: '/api/quiz',
+        latencyMs: Date.now() - startTime,
+      });
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ data: quizzes });
-  } catch (error) {
-    console.error('Quiz fetch error:', error);
+  } catch (error: any) {
+    logger.error('Quiz GET handler failed', error, {
+      userId: user_id || undefined,
+      route: '/api/quiz',
+      latencyMs: Date.now() - startTime,
+    });
     return NextResponse.json({ error: 'Failed to fetch quizzes' }, { status: 500 });
   }
 }

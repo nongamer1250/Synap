@@ -16,13 +16,38 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB
 const MAX_PDF_SIZE = 10 * 1024 * 1024;   // 10MB
 
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
+
 export async function POST(request: Request) {
+  const startTime = Date.now();
+  let user_id: string | undefined = undefined;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    user_id = user.id;
+
+    // 1. Rate Limiting Check (10 uploads / hour)
+    const ip = getClientIp(request);
+    const limiter = await rateLimit(`upload:${ip}`, 10, 3600);
+    
+    if (!limiter.success) {
+      logger.warn('Upload rate limit breached', { userId: user.id, route: '/api/upload', metadata: { ip } });
+      return NextResponse.json(
+        { error: 'Too many file uploads. Limit is 10 uploads per hour.' },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': String(limiter.limit),
+            'X-RateLimit-Remaining': String(limiter.remaining),
+            'X-RateLimit-Reset': String(limiter.reset),
+          }
+        }
+      );
     }
 
     const formData = await request.formData();
@@ -106,8 +131,12 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ data: upload });
-  } catch (error) {
-    console.error('Upload error:', error);
+  } catch (error: any) {
+    logger.error('File upload process failed', error, {
+      userId: user_id,
+      route: '/api/upload',
+      latencyMs: Date.now() - startTime,
+    });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

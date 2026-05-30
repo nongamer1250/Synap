@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { complete } from '@/lib/ai/llm';
+import { logger } from '@/lib/logger';
+import { z } from 'zod';
 
 export const maxDuration = 60;
 
@@ -48,7 +50,38 @@ function splitTranscript(text: string, maxSegmentLength = 8000): string[] {
   return segments;
 }
 
+// Zod payload schemas
+const segmentSchema = z.object({
+  title: z.string().optional().nullable(),
+  content: z.string().optional().nullable(),
+  summary: z.string().optional().nullable(),
+  key_concepts: z.array(z.string()).optional().nullable(),
+});
+
+const notesPostSchema = z.union([
+  z.object({
+    action: z.literal('generate_segment'),
+    segment: z.string().min(1),
+    index: z.number().min(0),
+    total: z.number().min(1),
+    upload_id: z.string().uuid().nullable().optional(),
+  }),
+  z.object({
+    action: z.literal('consolidate'),
+    title: z.string().optional().nullable(),
+    segments_data: z.array(segmentSchema).min(1),
+    upload_id: z.string().uuid().nullable().optional(),
+  }),
+  z.object({
+    action: z.string().optional().nullable(),
+    transcript: z.string().min(50),
+    upload_id: z.string().uuid().nullable().optional(),
+  }),
+]);
+
 export async function POST(request: Request) {
+  const startTime = Date.now();
+  let user_id: string | null = null;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -56,8 +89,25 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    user_id = user.id;
 
-    const body = await request.json();
+    // Request Schema Zod Validation
+    const rawBody = await request.clone().json().catch(() => ({}));
+    const validated = notesPostSchema.safeParse(rawBody);
+
+    if (!validated.success) {
+      logger.warn('Notes request payload validation failed', {
+        userId: user.id,
+        route: '/api/notes',
+        metadata: { errors: validated.error.errors },
+      });
+      return NextResponse.json(
+        { error: 'Invalid request payload', details: validated.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const body = validated.data as any;
     const { action, upload_id } = body;
     const customApiKey = request.headers.get('x-groq-api-key') || undefined;
 
@@ -309,13 +359,19 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ data: note });
-  } catch (error) {
-    console.error('Notes generation error:', error);
+  } catch (error: any) {
+    logger.error('Notes generation process failed', error, {
+      userId: user_id || undefined,
+      route: '/api/notes',
+      latencyMs: Date.now() - startTime,
+    });
     return NextResponse.json({ error: 'Failed to generate notes' }, { status: 500 });
   }
 }
 
 export async function GET(request: Request) {
+  const startTime = Date.now();
+  let user_id: string | null = null;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -323,6 +379,7 @@ export async function GET(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    user_id = user.id;
 
     const { data: notes, error } = await supabase
       .from('notes')
@@ -331,12 +388,21 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false });
 
     if (error) {
+      logger.error('Notes database query failed', error, {
+        userId: user.id,
+        route: '/api/notes',
+        latencyMs: Date.now() - startTime,
+      });
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ data: notes });
-  } catch (error) {
-    console.error('Notes fetch error:', error);
+  } catch (error: any) {
+    logger.error('Notes GET handler failed', error, {
+      userId: user_id || undefined,
+      route: '/api/notes',
+      latencyMs: Date.now() - startTime,
+    });
     return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
   }
 }

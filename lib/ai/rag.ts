@@ -10,7 +10,7 @@
  */
 
 import { embedText } from './embed';
-import { createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import type { LLMMessage } from './llm';
 import type { ChunkSource, DocumentChunk } from '@/types';
 
@@ -60,7 +60,7 @@ export async function buildRAGContext(
   const queryEmbedding = await embedText(query);
 
   // 2. Search for similar chunks in Supabase
-  const supabase = await createAdminClient();
+  const supabase = await createClient();
 
   const { data: chunks, error } = await supabase.rpc('match_document_chunks', {
     query_embedding: queryEmbedding,

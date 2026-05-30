@@ -148,7 +148,13 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
 
     try {
       setResetLoading(true);
-      const res = await fetch('/api/reset-data', { method: 'POST' });
+      const res = await fetch('/api/reset-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ confirm: 'WIPE_MY_DATA' }),
+      });
 
       if (!res.ok) {
         const data = await res.json();

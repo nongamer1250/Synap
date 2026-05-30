@@ -3,11 +3,16 @@ import { createClient } from '@/lib/supabase/server';
 import { transcribeAudio } from '@/lib/ai/transcribe';
 // @ts-ignore - Import the parser directly to bypass the index.js module.parent startup bug in Next.js bundlers
 import pdf from 'pdf-parse/lib/pdf-parse.js';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
+import { z } from 'zod';
 
 export const maxDuration = 60; // Vercel max for free tier
 
 export async function POST(request: Request) {
+  const startTime = Date.now();
   let bodyUploadId: string | null = null;
+  let user_id: string | undefined = undefined;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -15,13 +20,49 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    user_id = user.id;
 
-    const body = await request.json();
-    bodyUploadId = body.upload_id;
-
-    if (!bodyUploadId) {
-      return NextResponse.json({ error: 'upload_id is required' }, { status: 400 });
+    // 1. Rate Limiting Check (10 uploads / hour)
+    const ip = getClientIp(request);
+    const limiter = await rateLimit(`transcribe:${ip}`, 10, 3600);
+    
+    if (!limiter.success) {
+      logger.warn('Transcribe rate limit breached', { userId: user.id, route: '/api/transcribe', metadata: { ip } });
+      return NextResponse.json(
+        { error: 'Too many file processing requests. Limit is 10 uploads per hour.' },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': String(limiter.limit),
+            'X-RateLimit-Remaining': String(limiter.remaining),
+            'X-RateLimit-Reset': String(limiter.reset),
+          }
+        }
+      );
     }
+
+    // 2. Request Schema Zod Validation
+    const schema = z.object({
+      upload_id: z.string().uuid(),
+    });
+
+    const body = await request.clone().json().catch(() => ({}));
+    const validated = schema.safeParse(body);
+
+    if (!validated.success) {
+      logger.warn('Transcribe request payload validation failed', {
+        userId: user.id,
+        route: '/api/transcribe',
+        metadata: { errors: validated.error.errors },
+      });
+      return NextResponse.json(
+        { error: 'Invalid request payload', details: validated.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const { upload_id } = validated.data;
+    bodyUploadId = upload_id;
 
     // Fetch upload record
     const { data: upload, error: uploadError } = await supabase
@@ -122,8 +163,13 @@ export async function POST(request: Request) {
       .eq('id', bodyUploadId);
 
     return NextResponse.json({ data: transcript });
-  } catch (error) {
-    console.error('File processing error:', error);
+  } catch (error: any) {
+    logger.error('Transcription and file processing failed', error, {
+      userId: user_id,
+      route: '/api/transcribe',
+      latencyMs: Date.now() - startTime,
+      metadata: { uploadId: bodyUploadId },
+    });
 
     // Update status to error
     if (bodyUploadId) {
