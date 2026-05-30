@@ -217,50 +217,49 @@ export default async function HomePage() {
 
       </section>
 
-      {/* ── TRUSTED BY LOGO SHOWCASE ────────────────────────── */}
       <section className="py-12 border-y border-border/30 bg-muted/10 relative z-10 w-full">
-        <div className="max-w-7xl mx-auto px-4 text-center">
+        <div className="max-w-7xl mx-auto px-4 text-center mb-10">
           <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
             Designed for & trusted by top students from
           </span>
+        </div>
           
-          <div className="relative w-full overflow-hidden mt-10 py-4">
-            {/* High-end gradient fade-out masks on the edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background via-background/40 to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background via-background/40 to-transparent z-10 pointer-events-none" />
+        <div className="relative w-full overflow-hidden py-4">
+          {/* High-end gradient fade-out masks on the edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background via-background/40 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background via-background/40 to-transparent z-10 pointer-events-none" />
 
-            <div className="flex gap-20 sm:gap-28 animate-infinite-scroll py-3 whitespace-nowrap items-center">
-              {[
-                { name: 'IIT Delhi', path: '/logos/iit-delhi.png' },
-                { name: 'IIT Bombay', path: '/logos/iit-bombay.png' },
-                { name: 'IIT Madras', path: '/logos/iit-madras.png' },
-                { name: 'BITS Pilani', path: '/logos/bits-pilani.png' },
-                { name: 'Delhi University', path: '/logos/delhi-university.png' },
-                { name: 'IIT Kharagpur', path: '/logos/iit-kharagpur.png' },
-                { name: 'IISc Bangalore', path: '/logos/iisc-bangalore.png' },
-                { name: 'AIIMS Delhi', path: '/logos/aiims-delhi.png' },
-              ].concat([
-                { name: 'IIT Delhi', path: '/logos/iit-delhi.png' },
-                { name: 'IIT Bombay', path: '/logos/iit-bombay.png' },
-                { name: 'IIT Madras', path: '/logos/iit-madras.png' },
-                { name: 'BITS Pilani', path: '/logos/bits-pilani.png' },
-                { name: 'Delhi University', path: '/logos/delhi-university.png' },
-                { name: 'IIT Kharagpur', path: '/logos/iit-kharagpur.png' },
-                { name: 'IISc Bangalore', path: '/logos/iisc-bangalore.png' },
-                { name: 'AIIMS Delhi', path: '/logos/aiims-delhi.png' },
-              ]).map((logo, idx) => (
-                <div key={`${logo.name}-${idx}`} className="flex items-center gap-3.5 group transition-all duration-300 shrink-0 select-none">
-                  <img
-                    src={logo.path}
-                    alt={`${logo.name} Logo`}
-                    className="h-10 w-auto opacity-50 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105"
-                  />
-                  <span className="text-sm sm:text-base font-bold text-muted-foreground/60 group-hover:text-foreground/90 transition-colors tracking-wide">
-                    {logo.name}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="flex gap-20 sm:gap-28 animate-infinite-scroll py-3 whitespace-nowrap items-center">
+            {[
+              { name: 'IIT Delhi', path: '/logos/iit-delhi.png' },
+              { name: 'IIT Bombay', path: '/logos/iit-bombay.png' },
+              { name: 'IIT Madras', path: '/logos/iit-madras.png' },
+              { name: 'BITS Pilani', path: '/logos/bits-pilani.png' },
+              { name: 'Delhi University', path: '/logos/delhi-university.png' },
+              { name: 'IIT Kharagpur', path: '/logos/iit-kharagpur.png' },
+              { name: 'IISc Bangalore', path: '/logos/iisc-bangalore.png' },
+              { name: 'AIIMS Delhi', path: '/logos/aiims-delhi.png' },
+            ].concat([
+              { name: 'IIT Delhi', path: '/logos/iit-delhi.png' },
+              { name: 'IIT Bombay', path: '/logos/iit-bombay.png' },
+              { name: 'IIT Madras', path: '/logos/iit-madras.png' },
+              { name: 'BITS Pilani', path: '/logos/bits-pilani.png' },
+              { name: 'Delhi University', path: '/logos/delhi-university.png' },
+              { name: 'IIT Kharagpur', path: '/logos/iit-kharagpur.png' },
+              { name: 'IISc Bangalore', path: '/logos/iisc-bangalore.png' },
+              { name: 'AIIMS Delhi', path: '/logos/aiims-delhi.png' },
+            ]).map((logo, idx) => (
+              <div key={`${logo.name}-${idx}`} className="flex items-center gap-3.5 group transition-all duration-300 shrink-0 select-none">
+                <img
+                  src={logo.path}
+                  alt={`${logo.name} Logo`}
+                  className="h-10 w-auto opacity-50 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-300 transform group-hover:scale-105"
+                />
+                <span className="text-sm sm:text-base font-bold text-muted-foreground/60 group-hover:text-foreground/90 transition-colors tracking-wide">
+                  {logo.name}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
