@@ -29,6 +29,88 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
   const [showQr, setShowQr] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
 
+  // Password Change States
+  const [userEmail, setUserEmail] = useState('');
+  const [changePasswordMode, setChangePasswordMode] = useState<'idle' | 'otp_sent'>('idle');
+  const [otpCode, setOtpCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [loadingChange, setLoadingChange] = useState(false);
+
+  // Fetch current user email on mount
+  useEffect(() => {
+    if (isOpen) {
+      const fetchUserEmail = async () => {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser?.email) {
+          setUserEmail(authUser.email);
+        }
+      };
+      fetchUserEmail();
+    }
+  }, [isOpen]);
+
+  const handleRequestChangePasswordOtp = async () => {
+    if (!userEmail) {
+      toast.error('Unable to retrieve user email');
+      return;
+    }
+
+    setLoadingChange(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(userEmail);
+
+    if (error) {
+      toast.error(error.message);
+      setLoadingChange(false);
+      return;
+    }
+
+    setLoadingChange(false);
+    setChangePasswordMode('otp_sent');
+    toast.success('Verification OTP sent to your email!');
+  };
+
+  const handleConfirmChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpCode.length !== 6) {
+      toast.error('Please enter a valid 6-digit code');
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+
+    setLoadingChange(true);
+
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: userEmail,
+      token: otpCode,
+      type: 'recovery',
+    });
+
+    if (verifyError) {
+      toast.error(verifyError.message);
+      setLoadingChange(false);
+      return;
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) {
+      toast.error(updateError.message);
+      setLoadingChange(false);
+      return;
+    }
+
+    toast.success('Password changed successfully!');
+    setChangePasswordMode('idle');
+    setOtpCode('');
+    setNewPassword('');
+    setLoadingChange(false);
+  };
+
   // Donation links from environment variables or defaults
   const kofiUrl = process.env.NEXT_PUBLIC_COFEED_URL || 'https://ko-fi.com/synap';
   const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'santa24559@okhdfcbank';
@@ -177,6 +259,79 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
                       <span className="text-xs font-semibold text-emerald-400 mt-1 block">IndexedDB Enabled</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Change Password Block */}
+                <div className="border-t border-border/40 pt-4 mt-4 space-y-4">
+                  <div>
+                    <h5 className="text-xs font-bold text-foreground">Change Password</h5>
+                    <p className="text-[10px] text-muted-foreground">Modify your account security credentials via email verification.</p>
+                  </div>
+
+                  {changePasswordMode === 'idle' ? (
+                    <button
+                      onClick={handleRequestChangePasswordOtp}
+                      disabled={loadingChange || !userEmail}
+                      className="w-full py-2 px-3 rounded-xl border border-white/10 hover:bg-white/5 text-xs font-bold text-foreground transition-all cursor-pointer text-center active-press"
+                    >
+                      {loadingChange ? 'Requesting OTP...' : 'Request Password Change OTP'}
+                    </button>
+                  ) : (
+                    <form onSubmit={handleConfirmChangePassword} className="space-y-3 animate-scale-in">
+                      <div className="p-3 bg-success/5 border border-success/15 rounded-xl text-center text-[10px] text-success leading-relaxed">
+                        Verification code sent to <strong>{userEmail}</strong>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label htmlFor="changeOtp" className="block text-[9px] font-bold text-muted-foreground uppercase mb-1">6-Digit OTP</label>
+                          <input
+                            id="changeOtp"
+                            type="text"
+                            maxLength={6}
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                            required
+                            placeholder="123456"
+                            className="w-full px-3 py-2 rounded-lg bg-muted border border-border focus-ring-glow transition-all text-xs font-mono tracking-widest text-center"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="changePassword" className="block text-[9px] font-bold text-muted-foreground uppercase mb-1">New Password</label>
+                          <input
+                            id="changePassword"
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                            placeholder="Min. 8 chars"
+                            className="w-full px-3 py-2 rounded-lg bg-muted border border-border focus-ring-glow transition-all text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={loadingChange || otpCode.length !== 6 || newPassword.length < 8}
+                          className="flex-1 py-2 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-bold text-xs transition-all active-press"
+                        >
+                          {loadingChange ? 'Updating...' : 'Confirm Change'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setChangePasswordMode('idle');
+                            setOtpCode('');
+                            setNewPassword('');
+                          }}
+                          className="py-2 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </div>
             )}
