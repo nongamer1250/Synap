@@ -84,8 +84,8 @@ export default function LoginPage() {
 
   const handleConfirmResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otpCode.length !== 6) {
-      toast.error('Please enter a valid 6-digit code');
+    if (otpCode.length < 6 || otpCode.length > 8) {
+      toast.error('Please enter a valid verification code');
       return;
     }
     if (newPassword.length < 8) {
@@ -205,16 +205,16 @@ export default function LoginPage() {
               <form onSubmit={handleConfirmResetPassword} className="space-y-4">
                 <div>
                   <label htmlFor="otpCode" className="block text-xs font-semibold tracking-wide text-muted-foreground uppercase mb-1.5 pl-0.5 text-center">
-                    6-Digit Recovery OTP
+                    Recovery OTP
                   </label>
                   <input
                     id="otpCode"
                     type="text"
-                    maxLength={6}
+                    maxLength={8}
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                     required
-                    placeholder="123456"
+                    placeholder="Enter Code"
                     className="w-full px-4 py-3 rounded-xl bg-muted border border-border focus-ring-glow transition-all text-sm tracking-widest text-center font-bold font-mono placeholder-muted-foreground/60"
                   />
                 </div>
@@ -236,7 +236,7 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  disabled={loadingReset || otpCode.length !== 6 || newPassword.length < 8}
+                  disabled={loadingReset || otpCode.length < 6 || otpCode.length > 8 || newPassword.length < 8}
                   className="w-full py-3.5 rounded-xl font-bold text-white text-xs tracking-wider uppercase transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed glow-on-hover active-press cursor-pointer flex items-center justify-center gap-2"
                   style={{ background: 'linear-gradient(135deg, hsl(255 85% 68%), hsl(280 70% 65%))' }}
                 >

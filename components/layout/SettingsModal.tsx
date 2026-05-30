@@ -73,8 +73,8 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
 
   const handleConfirmChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otpCode.length !== 6) {
-      toast.error('Please enter a valid 6-digit code');
+    if (otpCode.length < 6 || otpCode.length > 8) {
+      toast.error('Please enter a valid verification code');
       return;
     }
     if (newPassword.length < 8) {
@@ -286,15 +286,15 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label htmlFor="changeOtp" className="block text-[9px] font-bold text-muted-foreground uppercase mb-1">6-Digit OTP</label>
+                          <label htmlFor="changeOtp" className="block text-[9px] font-bold text-muted-foreground uppercase mb-1">OTP Code</label>
                           <input
                             id="changeOtp"
                             type="text"
-                            maxLength={6}
+                            maxLength={8}
                             value={otpCode}
                             onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                             required
-                            placeholder="123456"
+                            placeholder="Code"
                             className="w-full px-3 py-2 rounded-lg bg-muted border border-border focus-ring-glow transition-all text-xs font-mono tracking-widest text-center"
                           />
                         </div>
@@ -315,7 +315,7 @@ export default function SettingsModal({ isOpen, onClose, user }: SettingsModalPr
                       <div className="flex gap-2">
                         <button
                           type="submit"
-                          disabled={loadingChange || otpCode.length !== 6 || newPassword.length < 8}
+                          disabled={loadingChange || otpCode.length < 6 || otpCode.length > 8 || newPassword.length < 8}
                           className="flex-1 py-2 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white font-bold text-xs transition-all active-press"
                         >
                           {loadingChange ? 'Updating...' : 'Confirm Change'}
