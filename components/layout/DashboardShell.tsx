@@ -83,7 +83,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
   }, [pathname]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background">
+    <div className="fixed inset-0 flex overflow-hidden bg-background">
       {/* 1. Desktop Sidebar (static, only shown on lg and above) */}
       {!isNative && (
         <div className="hidden lg:block h-full shrink-0">
