@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Circle, UploadCloud, BookOpen, Layers, HelpCircle, GraduationCap, MessageSquare, Award } from 'lucide-react';
+import { CheckCircle2, Circle, UploadCloud, BookOpen, Layers, HelpCircle, GraduationCap, MessageSquare, Award, X } from 'lucide-react';
 import Link from 'next/link';
 
 interface OnboardingChecklistProps {
@@ -19,13 +19,21 @@ export default function OnboardingChecklist({
 }: OnboardingChecklistProps) {
   const [hasChatted, setHasChatted] = useState(false);
   const [celebrated, setCelebrated] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const chatted = localStorage.getItem('synap_has_chatted') === 'true';
       setHasChatted(chatted);
+      const isDismissed = localStorage.getItem('synap_celebration_dismissed') === 'true';
+      setDismissed(isDismissed);
     }
   }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem('synap_celebration_dismissed', 'true');
+    setDismissed(true);
+  };
 
   const tasks = [
     {
@@ -89,9 +97,18 @@ export default function OnboardingChecklist({
 
   // Hide the checklist if it is completely done to keep the dashboard clutter-free
   if (percentCompleted === 100) {
+    if (dismissed) return null;
+
     return (
       <div className="glass rounded-3xl border border-primary/20 bg-card p-6 relative overflow-hidden animate-scale-in shadow-lg"
         style={{ background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, rgba(21, 15, 46, 0.95) 100%)' }}>
+        <button 
+          onClick={handleDismiss} 
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground/85 hover:text-foreground hover:bg-white/10 active:scale-95 transition-all cursor-pointer z-20"
+          aria-label="Dismiss celebration"
+        >
+          <X className="w-4 h-4" />
+        </button>
         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
         <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 animate-bounce-dot">
