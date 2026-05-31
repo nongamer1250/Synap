@@ -6,6 +6,7 @@ import PwaInstallPrompt from '@/components/layout/PwaInstallPrompt';
 import SmoothScrollProvider from '@/components/providers/SmoothScrollProvider';
 import ScrollReveal from '@/components/layout/ScrollReveal';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import DeepLinkProvider from '@/components/providers/DeepLinkProvider';
 import './globals.css';
 
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </SmoothScrollProvider>
         <Analytics />
+        <SpeedInsights />
         <Toaster
           position="top-right"
           toastOptions={{
